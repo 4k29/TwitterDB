@@ -1,0 +1,35 @@
+name: Purge confirmed deleted tweets
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: twitterdb-data-write
+  cancel-in-progress: false
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Purge deleted tweets
+        run: node scripts/purge-deleted.mjs
+
+      - name: Save purged database
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tweets.js analytics/data.js analytics/categories.js analytics/corrections.json tweet-status.json deleted.json purge-result.json
+          git commit -m "Purge confirmed deleted tweets"
+          git push
