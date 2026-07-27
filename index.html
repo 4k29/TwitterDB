@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <title>TwitterDB</title>
-  <meta name="description" content="過去ツイートを絞り込みできる個人用データベース">
-  <link rel="stylesheet" href="./styles.css?v=4">
-  <link rel="stylesheet" href="./ui-v3.css?v=4">
-  <link rel="stylesheet" href="./ui-v4.css?v=4">
+  <meta name="description" content="過去ツイートを絞り込み、リンク先の存在状態を確認できる個人用データベース">
+  <link rel="stylesheet" href="./styles.css?v=5">
+  <link rel="stylesheet" href="./ui-v3.css?v=5">
+  <link rel="stylesheet" href="./ui-v4.css?v=5">
+  <link rel="stylesheet" href="./ui-v5.css?v=5">
 </head>
 <body>
   <main class="shell">
@@ -21,6 +22,7 @@
         <button id="syncSettings" class="sync-button" type="button" aria-haspopup="dialog" aria-controls="syncDialog">同期設定を開く</button>
         <button id="showDeleted" class="secondary" type="button">削除済み <span id="deletedCount">0</span></button>
         <span id="syncBadge" class="sync-status" data-state="loading">確認中…</span>
+        <span id="checkBadge" class="check-status" data-state="idle">リンク未確認</span>
       </div>
     </header>
 
@@ -43,6 +45,7 @@
           <option value="reposts">リポスト順</option>
         </select>
       </label>
+      <button id="checkVisible" class="check-all-button" type="button">表示中を確認</button>
       <button id="resetFilters" class="secondary reset" type="button">絞り込みを解除</button>
     </section>
 
@@ -74,7 +77,7 @@
         <div><p class="eyebrow">GitHub Sync</p><h2>同期設定</h2></div>
         <button id="closeSync" class="secondary" type="button">閉じる</button>
       </div>
-      <p>TwitterDBだけに書き込めるFine-grained personal access tokenを、この端末に保存します。トークンはGitHubやtweets.jsには書き込みません。</p>
+      <p>TwitterDBだけにアクセスできるFine-grained personal access tokenを、この端末に保存します。削除同期にはContentsのRead and write、リンク確認にはActionsのRead and writeが必要です。</p>
       <label><span>Fine-grained token</span><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_…"></label>
       <div class="dialog-actions">
         <button id="clearToken" class="secondary" type="button">この端末から削除</button>
@@ -86,6 +89,6 @@
 
   <script>window.YTD = window.YTD || { tweets: {} };</script>
   <script src="./tweets.js"></script>
-  <script src="./app-v4.js?v=4"></script>
+  <script src="./app-v5.js?v=5"></script>
 </body>
 </html>
