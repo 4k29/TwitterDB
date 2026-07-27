@@ -359,6 +359,18 @@
     }
   }
 
+  async function waitForPublishedPurge(updatedAt) {
+    for (let attempt = 0; attempt < 36; attempt += 1) {
+      try {
+        const response = await fetch('./purge-result.json?t=' + Date.now(), { cache: 'no-store' });
+        const published = await response.json();
+        if (published.updatedAt === updatedAt) return true;
+      } catch {}
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+    return false;
+  }
+
   async function purgeConfirmedDeleted() {
     if (!getToken()) { openSyncDialog('削除済み投稿の整理にはActions権限が必要です。'); return; }
     if (writeInProgress) return;
@@ -379,8 +391,14 @@
         await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 7000 : 5000));
         const result = (await readJsonFile(PURGE_RESULT_PATH, getToken())).value || {};
         if (result.updatedAt && result.updatedAt !== baseline) {
-          setSync(`${Number(result.removedCount || 0).toLocaleString('ja-JP')}件削除`, 'saved');
-          setTimeout(() => window.location.reload(), 1200);
+          setSync('サイト反映中…', 'saving', '削除済みデータの公開を待っています…');
+          const published = await waitForPublishedPurge(result.updatedAt);
+          if (published) {
+            setSync(`${Number(result.removedCount || 0).toLocaleString('ja-JP')}件削除`, 'saved');
+            window.location.reload();
+          } else {
+            setSync('反映待ち', 'saving', '削除は完了しています。少し後に再読み込みしてください。');
+          }
           return;
         }
       }
