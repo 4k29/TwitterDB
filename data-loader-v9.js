@@ -104,6 +104,11 @@
     } })) } };
   }
 
+  async function loadApp() {
+    await loadScript('./app-v8.js?v=11');
+    await loadScript('./sync-watch-v11.js?v=11');
+  }
+
   async function start() {
     let db = null;
     let version = '';
@@ -118,7 +123,7 @@
       if (Array.isArray(cachedTweets) && cachedTweets.length && (!version || cachedVersion === version)) {
         setStatus('保存済みデータを読み込んでいます…');
         exposeForExistingApp(cachedTweets);
-        await loadScript('./app-v8.js?v=9');
+        await loadApp();
         return;
       }
     } catch {
@@ -137,7 +142,7 @@
       } catch {}
     }
 
-    await loadScript('./app-v8.js?v=9');
+    await loadApp();
   }
 
   start().catch((error) => {
