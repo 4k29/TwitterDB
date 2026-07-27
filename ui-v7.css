@@ -1,6 +1,9 @@
 .filters{grid-template-columns:minmax(130px,.7fr) minmax(180px,1.1fr) minmax(130px,.7fr) minmax(190px,1.1fr) minmax(130px,.7fr) auto auto}
 .bulk-check{background:#f5f5f7;color:#0a0a0a;font-weight:650}
 .bulk-check:disabled{opacity:.45;cursor:default}
+.purge-deleted{min-height:36px;background:#351919;border:1px solid #5a2929;color:#e4a0a0}
+.purge-deleted:hover{background:#4a2020}
+.purge-deleted:disabled{opacity:.45;cursor:default}
 .tweet-row-v5{grid-template-columns:28px 112px minmax(0,1fr) 68px 82px 58px}
 .deleted-row{grid-template-columns:100px minmax(0,1fr) 58px}
 @media(max-width:1000px){
