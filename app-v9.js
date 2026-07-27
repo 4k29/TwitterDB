@@ -22,7 +22,7 @@
     syncSettings: $('syncSettings'), syncDialog: $('syncDialog'), syncForm: $('syncForm'), closeSync: $('closeSync'),
     githubToken: $('githubToken'), saveToken: $('saveToken'), clearToken: $('clearToken'), syncMessage: $('syncMessage'),
     bulkActions: $('bulkActions'), selectedCount: $('selectedCount'), selectVisible: $('selectVisible'),
-    clearSelected: $('clearSelected'), checkSelected: $('checkSelected')
+    clearSelected: $('clearSelected'), checkSelected: $('checkSelected'), purgeDeleted: $('purgeDeleted')
   };
 
   let allTweets = [];
@@ -224,6 +224,7 @@
     els.selectedCount.textContent = count.toLocaleString('ja-JP');
     els.clearSelected.disabled = count === 0;
     els.checkSelected.disabled = count === 0 || checkInProgress;
+    els.purgeDeleted.disabled = writeInProgress;
     els.bulkActions.dataset.active = count ? 'true' : 'false';
   }
 
@@ -289,6 +290,41 @@
       return false;
     } finally {
       writeInProgress = false;
+      updateBulkToolbar();
+    }
+  }
+
+  async function purgeConfirmedDeleted() {
+    if (!getToken()) { openSyncDialog('削除済み投稿の整理にはContentsのRead and write権限が必要です。'); return; }
+    if (writeInProgress) return;
+    writeInProgress = true;
+    els.purgeDeleted.disabled = true;
+    setSync('整理中…', 'saving');
+    try {
+      const [latest, statusFile] = await Promise.all([
+        readJsonFile(DELETED_PATH, getToken()),
+        readJsonFile(STATUS_PATH, getToken())
+      ]);
+      const ids = Object.entries(statusFile.value?.tweets || {})
+        .filter(([, value]) => value?.status === 'deleted')
+        .map(([id]) => String(id))
+        .sort();
+      const content = JSON.stringify({ deletedIds: ids, updatedAt: new Date().toISOString() }, null, 2) + '\n';
+      await githubRequest(`/contents/${DELETED_PATH}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `Remove ${ids.length} confirmed deleted tweets`, content: encodeBase64Utf8(content), sha: latest.sha, branch: BRANCH })
+      });
+      deletedIds = new Set(ids);
+      selectedIds.clear();
+      els.deletedCount.textContent = ids.length.toLocaleString('ja-JP');
+      setSync(`${ids.length.toLocaleString('ja-JP')}件削除`, 'saved');
+      applyFilters({ rebuildMentions: true, rebuildCategories: true });
+    } catch (error) {
+      setSync('整理失敗', 'error', `削除済み投稿を整理できませんでした：${error.message}`);
+    } finally {
+      writeInProgress = false;
+      els.purgeDeleted.disabled = false;
       updateBulkToolbar();
     }
   }
@@ -388,6 +424,7 @@
   });
   els.clearSelected.addEventListener('click', () => { selectedIds.clear(); render(); });
   els.checkSelected.addEventListener('click', () => { const ids = [...selectedIds]; if (ids.length) startCheck(ids); });
+  els.purgeDeleted.addEventListener('click', purgeConfirmedDeleted);
   els.list.addEventListener('change', (event) => {
     const input = event.target.closest('[data-select-id]');
     if (!input) return;
