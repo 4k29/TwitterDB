@@ -19,7 +19,7 @@
     type: $('typeFilter'), reply: $('replyFilter'), axis: $('categoryAxis'), category: $('categoryFilter'), sort: $('sortOrder'), reset: $('resetFilters'),
     resultCount: $('resultCount'), rangeLabel: $('rangeLabel'), syncState: $('syncState'), syncBadge: $('syncBadge'),
     checkBadge: $('checkBadge'), checkVisible: $('checkVisible'), status: $('status'), list: $('tweetList'),
-    loadMore: $('loadMore'), showDeleted: $('showDeleted'), deletedCount: $('deletedCount'),
+    pagination: $('pagination'), prevPage: $('prevPage'), nextPage: $('nextPage'), pageLabel: $('pageLabel'), showDeleted: $('showDeleted'), deletedCount: $('deletedCount'),
     deletedDialog: $('deletedDialog'), closeDeleted: $('closeDeleted'), deletedQuery: $('deletedQuery'), deletedList: $('deletedList'),
     syncSettings: $('syncSettings'), syncDialog: $('syncDialog'), syncForm: $('syncForm'), closeSync: $('closeSync'),
     githubToken: $('githubToken'), saveToken: $('saveToken'), clearToken: $('clearToken'), syncMessage: $('syncMessage'),
@@ -29,7 +29,7 @@
 
   let allTweets = [];
   let filtered = [];
-  let visibleCount = PAGE_SIZE;
+  let currentPage = 0;
   let deletedIds = new Set();
   let totalPurged = 0;
   let tweetStatuses = {};
@@ -174,7 +174,7 @@
   function applyFilters({ rebuildMentions = false, rebuildCategories = false } = {}) {
     if (rebuildMentions) rebuildMentionFilter();
     if (rebuildCategories) rebuildCategoryFilter();
-    visibleCount = PAGE_SIZE;
+    currentPage = 0;
     const type = els.type.value;
     const mention = els.reply.value;
     const categoryKey = els.axis.value;
@@ -231,6 +231,11 @@
     els.bulkActions.dataset.active = count ? 'true' : 'false';
   }
 
+  function currentPageRows() {
+    const start = currentPage * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }
+
   function render() {
     els.resultCount.textContent = filtered.length.toLocaleString('ja-JP');
     if (filtered.length) {
@@ -238,9 +243,17 @@
     } else {
       els.rangeLabel.textContent = '条件に一致する投稿はありません';
     }
-    const rows = filtered.slice(0, visibleCount);
+    const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    currentPage = Math.min(currentPage, pageCount - 1);
+    const start = currentPage * PAGE_SIZE;
+    const rows = currentPageRows();
     els.list.innerHTML = rows.length ? rows.map(tweetRow).join('') : '<p class="empty">投稿が見つかりませんでした。</p>';
-    els.loadMore.hidden = visibleCount >= filtered.length;
+    els.pagination.hidden = filtered.length === 0;
+    els.prevPage.disabled = currentPage === 0;
+    els.nextPage.disabled = currentPage >= pageCount - 1;
+    const first = filtered.length ? start + 1 : 0;
+    const last = Math.min(start + PAGE_SIZE, filtered.length);
+    els.pageLabel.textContent = `${currentPage + 1} / ${pageCount}ページ ・ ${first}〜${last}件目`;
     updateBulkToolbar();
   }
 
@@ -427,10 +440,20 @@
   els.reset.addEventListener('click', () => {
     els.type.value = 'all'; els.reply.value = 'all'; els.axis.value = 'topic'; rebuildCategoryFilter(); els.category.value = 'all'; els.sort.value = 'new'; applyFilters();
   });
-  els.loadMore.addEventListener('click', () => { visibleCount += PAGE_SIZE; render(); });
-  els.checkVisible.addEventListener('click', () => startCheck(filtered.slice(0, visibleCount).map((tweet) => tweet.id)));
+  els.prevPage.addEventListener('click', () => {
+    currentPage = Math.max(0, currentPage - 1);
+    render();
+    els.list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  els.nextPage.addEventListener('click', () => {
+    const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    currentPage = Math.min(pageCount - 1, currentPage + 1);
+    render();
+    els.list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  els.checkVisible.addEventListener('click', () => startCheck(currentPageRows().map((tweet) => tweet.id)));
   els.selectVisible.addEventListener('click', () => {
-    filtered.slice(0, visibleCount).forEach((tweet) => selectedIds.add(tweet.id));
+    currentPageRows().forEach((tweet) => selectedIds.add(tweet.id));
     render();
   });
   els.clearSelected.addEventListener('click', () => { selectedIds.clear(); render(); });
