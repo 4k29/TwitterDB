@@ -3245,7 +3245,13 @@
       "checkedAt": "2026-07-27T14:25:05.468Z",
       "httpStatus": 200,
       "source": "x-oembed"
+    },
+    "1883382414762008868": {
+      "status": "deleted",
+      "checkedAt": "2026-07-27T14:30:49.147Z",
+      "httpStatus": 404,
+      "source": "x-oembed"
     }
   },
-  "updatedAt": "2026-07-27T14:25:05.990Z"
+  "updatedAt": "2026-07-27T14:30:49.945Z"
 }
