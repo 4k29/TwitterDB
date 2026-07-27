@@ -6,7 +6,8 @@
   <meta name="color-scheme" content="dark">
   <title>TwitterDB</title>
   <meta name="description" content="過去ツイートを検索・絞り込みできる個人用データベース">
-  <link rel="stylesheet" href="./styles.css?v=2">
+  <link rel="stylesheet" href="./styles.css?v=3">
+  <link rel="stylesheet" href="./ui-v3.css?v=3">
 </head>
 <body>
   <main class="shell">
@@ -18,6 +19,7 @@
       <div class="header-actions">
         <button id="syncSettings" class="sync-button" type="button" aria-haspopup="dialog" aria-controls="syncDialog">同期設定を開く</button>
         <button id="showDeleted" class="secondary" type="button">削除済み <span id="deletedCount">0</span></button>
+        <span id="syncBadge" class="sync-status" data-state="loading">確認中…</span>
       </div>
     </header>
 
@@ -37,7 +39,7 @@
           <option value="repost">リポスト</option>
         </select>
       </label>
-      <label><span>返信先</span><select id="replyFilter"><option value="all">すべて</option></select></label>
+      <label><span>返信先・メンション</span><select id="replyFilter"><option value="all">すべて</option></select></label>
       <label><span>並び順</span>
         <select id="sortOrder">
           <option value="new">新しい順</option>
@@ -59,18 +61,6 @@
     <section id="tweetList" class="tweet-list" aria-label="投稿一覧"></section>
     <button id="loadMore" class="load-more" type="button" hidden>さらに表示</button>
   </main>
-
-  <dialog id="deleteDialog">
-    <form method="dialog" class="dialog-card">
-      <h2>一覧から削除しますか？</h2>
-      <p>X上の投稿は削除されません。TwitterDBの検索結果から除外し、GitHubを通して端末間で同期します。</p>
-      <blockquote id="deleteExcerpt"></blockquote>
-      <div class="dialog-actions">
-        <button value="cancel" class="secondary">キャンセル</button>
-        <button id="confirmDelete" value="delete" class="danger">一覧から削除</button>
-      </div>
-    </form>
-  </dialog>
 
   <dialog id="deletedDialog">
     <div class="dialog-card deleted-card">
@@ -101,6 +91,6 @@
 
   <script>window.YTD = window.YTD || { tweets: {} };</script>
   <script src="./tweets.js"></script>
-  <script src="./app.js?v=2"></script>
+  <script src="./app-v3.js?v=3"></script>
 </body>
 </html>
