@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2026-07-27T11:00:47.852Z",
-  "requestedCount": 99,
-  "removedCount": 91,
-  "totalPurged": 1066,
-  "removedArchive": 91,
-  "removedAnalytics": 91,
-  "removedCategories": 91,
+  "updatedAt": "2026-07-27T11:05:57.854Z",
+  "requestedCount": 59,
+  "removedCount": 27,
+  "totalPurged": 1093,
+  "removedArchive": 27,
+  "removedAnalytics": 27,
+  "removedCategories": 27,
   "removedCorrections": 0
 }
