@@ -30,7 +30,7 @@ X側の削除状態は自動検知しません。Xで削除した投稿を、Twi
 1. GitHubの Settings → Developer settings → Personal access tokens → Fine-grained tokens を開く
 2. Resource ownerを `4k29` にする
 3. Repository accessを `Only select repositories` にして `TwitterDB` だけを選ぶ
-4. Repository permissionsの `Contents` を `Read and write` にする
+4. Repository permissionsの `Contents` と `Actions` を `Read and write` にする
 5. 作成したトークンをTwitterDBの「同期設定」に入力する
 
 トークンはパスワードと同じ扱いです。チャット、リポジトリ、スクリーンショットなどへ貼らないでください。
