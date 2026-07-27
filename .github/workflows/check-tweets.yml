@@ -31,12 +31,12 @@ jobs:
 
       - name: Save results
         run: |
-          if git diff --quiet -- tweet-status.json; then
+          if git diff --quiet -- tweet-status.json deleted.json; then
             echo "No changes"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tweet-status.json
-          git commit -m "Update tweet existence status"
+          git add tweet-status.json deleted.json
+          git commit -m "Update tweet status and exclusions"
           git push
