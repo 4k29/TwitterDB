@@ -105,8 +105,9 @@
   }
 
   async function loadApp() {
-    await loadScript('./app-v8.js?v=11');
-    await loadScript('./sync-watch-v11.js?v=11');
+    await loadScript('./ios-sync-fix-v12.js?v=12');
+    await loadScript('./app-v8.js?v=12');
+    await loadScript('./sync-watch-v11.js?v=12');
   }
 
   async function start() {
