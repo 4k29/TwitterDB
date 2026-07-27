@@ -104,8 +104,8 @@
   }
 
   async function loadApp() {
-    await loadScript('./ios-sync-fix-v12.js?v=13');
-    await loadScript('./app-v13.js?v=13');
+    await loadScript('./ios-sync-fix-v12.js?v=14');
+    await loadScript('./app-v8.js?v=14');
   }
 
   async function start() {
