@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="dark">
   <title>TwitterDB</title>
   <meta name="description" content="過去ツイートを絞り込み、リンク先の存在状態を確認できる個人用データベース">
-  <link rel="stylesheet" href="./styles.css?v=14">
+  <link rel="stylesheet" href="./styles.css?v=15">
   <link rel="stylesheet" href="./ui-v3.css?v=14">
   <link rel="stylesheet" href="./ui-v4.css?v=14">
   <link rel="stylesheet" href="./ui-v5.css?v=14">
@@ -20,6 +20,7 @@
         <h1>過去ツイートを、探す。</h1>
       </div>
       <div class="header-actions">
+        <a href="./analytics/" class="header-link">投稿分析</a>
         <button id="syncSettings" class="sync-button" type="button" aria-haspopup="dialog" aria-controls="syncDialog">同期設定を開く</button>
         <button id="showDeleted" class="secondary" type="button">削除済み <span id="deletedCount">0</span></button>
         <span id="syncBadge" class="sync-status" data-state="loading">確認中…</span>
