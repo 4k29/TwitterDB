@@ -46,6 +46,7 @@ function parseArchive(source) {
 
 const store = await readJson(statusPath, { tweets: {}, updatedAt: null });
 store.tweets ||= {};
+const previousResult = await readJson(resultPath, {});
 const confirmedIds = new Set(
   Object.entries(store.tweets)
     .filter(([, value]) => value?.status === 'deleted')
@@ -99,6 +100,9 @@ corrections.corrections = (corrections.corrections || []).filter((item) => {
 for (const id of confirmedIds) delete store.tweets[id];
 
 const updatedAt = new Date().toISOString();
+const removedCount = Math.max(removedArchive, removedAnalytics, removedCategories);
+const previousTotal = Math.max(0, Number(previousResult.totalPurged ?? previousResult.removedCount ?? 0) || 0);
+const totalPurged = previousTotal + removedCount;
 store.updatedAt = updatedAt;
 corrections.updatedAt = updatedAt;
 
@@ -109,7 +113,8 @@ await Promise.all([
   fs.writeFile(resultPath, `${JSON.stringify({
     updatedAt,
     requestedCount: confirmedIds.size,
-    removedCount: Math.max(removedArchive, removedAnalytics, removedCategories),
+    removedCount,
+    totalPurged,
     removedArchive,
     removedAnalytics,
     removedCategories,
