@@ -1482,34 +1482,10 @@
       "httpStatus": 200,
       "source": "x-oembed"
     },
-    "1842567983224471751": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:06.134Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
     "1842706951710605821": {
       "status": "exists",
       "checkedAt": "2026-07-27T11:09:06.663Z",
       "httpStatus": 200,
-      "source": "x-oembed"
-    },
-    "1842707105809367141": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:07.213Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842732176296775817": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:07.756Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842735740599599338": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:08.282Z",
-      "httpStatus": 404,
       "source": "x-oembed"
     },
     "1842748615170932994": {
@@ -1522,18 +1498,6 @@
       "status": "exists",
       "checkedAt": "2026-07-27T11:09:09.381Z",
       "httpStatus": 200,
-      "source": "x-oembed"
-    },
-    "1842758162723836151": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:09.939Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842758513787044048": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:10.491Z",
-      "httpStatus": 404,
       "source": "x-oembed"
     },
     "1842759963506335791": {
@@ -1572,12 +1536,6 @@
       "httpStatus": 200,
       "source": "x-oembed"
     },
-    "1842789850627572131": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:14.362Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
     "1842801637947314266": {
       "status": "exists",
       "checkedAt": "2026-07-27T11:09:14.901Z",
@@ -1590,22 +1548,10 @@
       "httpStatus": 200,
       "source": "x-oembed"
     },
-    "1842830750082576624": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:16.164Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
     "1842831069629833435": {
       "status": "exists",
       "checkedAt": "2026-07-27T11:09:16.696Z",
       "httpStatus": 200,
-      "source": "x-oembed"
-    },
-    "1842831130451726568": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:17.238Z",
-      "httpStatus": 404,
       "source": "x-oembed"
     },
     "1842831883325043124": {
@@ -1614,40 +1560,16 @@
       "httpStatus": 200,
       "source": "x-oembed"
     },
-    "1842832222887555449": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:18.334Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842832974821404973": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:18.861Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
     "1842849171377926376": {
       "status": "exists",
       "checkedAt": "2026-07-27T11:09:19.388Z",
       "httpStatus": 200,
       "source": "x-oembed"
     },
-    "1842853554102616114": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:19.937Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
     "1842862774919327773": {
       "status": "exists",
       "checkedAt": "2026-07-27T11:09:20.496Z",
       "httpStatus": 200,
-      "source": "x-oembed"
-    },
-    "1842864015841579060": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:21.042Z",
-      "httpStatus": 404,
       "source": "x-oembed"
     },
     "1842872370916450617": {
@@ -1662,18 +1584,6 @@
       "httpStatus": 200,
       "source": "x-oembed"
     },
-    "1842875245822435627": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:22.684Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842886101993955455": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:23.226Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
     "1842893189193376051": {
       "status": "exists",
       "checkedAt": "2026-07-27T11:09:23.758Z",
@@ -1686,90 +1596,6 @@
       "httpStatus": 200,
       "source": "x-oembed"
     },
-    "1842895384613728621": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:24.869Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842902034321953241": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:25.412Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842904129460699454": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:25.939Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842904370025042237": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:26.471Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842911402442510592": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:27.015Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842915027483029670": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:27.543Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842915823884829116": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:28.075Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842916333580861711": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:28.616Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842929170885882221": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:29.155Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842931807240827104": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:29.695Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842934170005438900": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:30.227Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842934492165702072": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:30.770Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842935689966694434": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:31.342Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
-    "1842937675197948278": {
-      "status": "deleted",
-      "checkedAt": "2026-07-27T11:09:31.875Z",
-      "httpStatus": 404,
-      "source": "x-oembed"
-    },
     "1843067489791742078": {
       "status": "exists",
       "checkedAt": "2026-07-27T11:09:32.408Z",
@@ -1777,5 +1603,5 @@
       "source": "x-oembed"
     }
   },
-  "updatedAt": "2026-07-27T11:09:32.958Z"
+  "updatedAt": "2026-07-27T11:10:13.633Z"
 }
