@@ -1,0 +1,42 @@
+name: Check tweet links
+
+on:
+  workflow_dispatch:
+    inputs:
+      tweet_ids:
+        description: Comma-separated tweet IDs
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: twitterdb-link-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Check tweets
+        env:
+          TWEET_IDS: ${{ inputs.tweet_ids }}
+        run: node scripts/check-tweets.mjs
+
+      - name: Save results
+        run: |
+          if git diff --quiet -- tweet-status.json; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tweet-status.json
+          git commit -m "Update tweet existence status"
+          git push
