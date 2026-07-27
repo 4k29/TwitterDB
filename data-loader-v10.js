@@ -135,7 +135,7 @@
 
   async function loadApp() {
     await loadScript('./ios-sync-fix-v12.js?v=14');
-    await loadScript('./app-v9.js?v=15');
+    await loadScript('./app-v9.js?v=16');
   }
 
   async function start() {
