@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: twitterdb-link-check
+  group: twitterdb-data-write
   cancel-in-progress: false
 
 jobs:
