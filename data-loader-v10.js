@@ -42,16 +42,25 @@
   }
 
   async function sourceVersion() {
+    const parts = [];
     try {
-      const response = await fetch('./tweets.js', { method: 'HEAD', cache: 'no-cache' });
-      return [
+      const response = await fetch('./tweets.js?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+      parts.push(
         response.headers.get('etag') || '',
         response.headers.get('last-modified') || '',
         response.headers.get('content-length') || ''
-      ].join('|');
+      );
     } catch {
-      return '';
+      parts.push('', '', '');
     }
+    try {
+      const response = await fetch('./purge-result.json?t=' + Date.now(), { cache: 'no-store' });
+      const result = await response.json();
+      parts.push(result.updatedAt || '', String(result.totalPurged ?? result.removedCount ?? ''));
+    } catch {
+      parts.push('', '');
+    }
+    return parts.join('|');
   }
 
   function loadScript(src) {
@@ -135,7 +144,7 @@
 
   async function loadApp() {
     await loadScript('./ios-sync-fix-v12.js?v=14');
-    await loadScript('./app-v9.js?v=19');
+    await loadScript('./app-v9.js?v=20');
   }
 
   async function start() {
@@ -162,7 +171,7 @@
 
     setStatus('初回のみ投稿データを最適化しています…');
     window.YTD = window.YTD || { tweets: {} };
-    await loadScript('./tweets.js');
+    await loadScript('./tweets.js?v=' + encodeURIComponent(version || String(Date.now())));
     const compact = compactArchive();
     exposeForExistingApp(compact);
 
