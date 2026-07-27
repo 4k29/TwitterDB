@@ -70,8 +70,13 @@ for (const id of ids) {
 
 const updatedAt = new Date().toISOString();
 store.updatedAt = updatedAt;
+const confirmedDeletedIds = new Set(
+  Object.entries(store.tweets)
+    .filter(([, value]) => value?.status === 'deleted')
+    .map(([id]) => String(id))
+);
 deletedStore = {
-  deletedIds: [...deletedIds].sort(),
+  deletedIds: [...confirmedDeletedIds].sort(),
   updatedAt
 };
 
@@ -79,4 +84,4 @@ await Promise.all([
   fs.writeFile(statusPath, `${JSON.stringify(store, null, 2)}\n`),
   fs.writeFile(deletedPath, `${JSON.stringify(deletedStore, null, 2)}\n`)
 ]);
-console.log(`Checked ${ids.length} tweet(s); ${deletedIds.size} tweet(s) are excluded.`);
+console.log(`Checked ${ids.length} tweet(s); ${confirmedDeletedIds.size} confirmed deleted tweet(s) are excluded.`);
