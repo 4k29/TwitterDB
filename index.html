@@ -16,6 +16,7 @@
         <h1>過去ツイートを、探す。</h1>
       </div>
       <div class="header-actions">
+        <button id="syncSettings" class="secondary" type="button">同期設定</button>
         <button id="showDeleted" class="secondary" type="button">削除済み <span id="deletedCount">0</span></button>
       </div>
     </header>
@@ -51,6 +52,7 @@
     <section class="summary" aria-live="polite">
       <div><strong id="resultCount">0</strong><span>件</span></div>
       <p id="rangeLabel">データを読み込んでいます…</p>
+      <p id="syncState">同期状態を確認しています…</p>
     </section>
 
     <section id="status" class="status" hidden></section>
@@ -61,7 +63,7 @@
   <dialog id="deleteDialog">
     <form method="dialog" class="dialog-card">
       <h2>一覧から削除しますか？</h2>
-      <p>X上の投稿は削除されません。このデータベースの検索結果から除外します。</p>
+      <p>X上の投稿は削除されません。TwitterDBの検索結果から除外し、GitHubを通して端末間で同期します。</p>
       <blockquote id="deleteExcerpt"></blockquote>
       <div class="dialog-actions">
         <button value="cancel" class="secondary">キャンセル</button>
@@ -79,6 +81,22 @@
       <input id="deletedQuery" type="search" placeholder="削除済みの投稿を検索">
       <div id="deletedList" class="deleted-list"></div>
     </div>
+  </dialog>
+
+  <dialog id="syncDialog">
+    <form id="syncForm" class="dialog-card">
+      <div class="dialog-head">
+        <div><p class="eyebrow">GitHub Sync</p><h2>同期設定</h2></div>
+        <button id="closeSync" class="secondary" type="button">閉じる</button>
+      </div>
+      <p>TwitterDBだけに書き込めるFine-grained personal access tokenを、この端末に保存します。トークンはGitHubやtweets.jsには書き込みません。</p>
+      <label><span>Fine-grained token</span><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+      <div class="dialog-actions">
+        <button id="clearToken" class="secondary" type="button">この端末から削除</button>
+        <button id="saveToken" type="submit">保存して接続確認</button>
+      </div>
+      <p id="syncMessage" class="muted"></p>
+    </form>
   </dialog>
 
   <script>window.YTD = window.YTD || { tweets: {} };</script>
