@@ -23,7 +23,7 @@
     });
   }
 
-  async function readCache(db, key) {
+  function readCache(db, key) {
     return new Promise((resolve, reject) => {
       const request = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(key);
       request.onsuccess = () => resolve(request.result);
@@ -31,7 +31,7 @@
     });
   }
 
-  async function writeCache(db, values) {
+  function writeCache(db, values) {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
@@ -65,9 +65,8 @@
   }
 
   function compactArchive() {
-    const bucket = window.YTD?.tweets || {};
     const result = [];
-    for (const part of Object.values(bucket)) {
+    for (const part of Object.values(window.YTD?.tweets || {})) {
       if (!Array.isArray(part)) continue;
       for (const row of part) {
         const tweet = row?.tweet || row || {};
@@ -105,9 +104,8 @@
   }
 
   async function loadApp() {
-    await loadScript('./ios-sync-fix-v12.js?v=12');
-    await loadScript('./app-v8.js?v=12');
-    await loadScript('./sync-watch-v12.js?v=12');
+    await loadScript('./ios-sync-fix-v12.js?v=13');
+    await loadScript('./app-v13.js?v=13');
   }
 
   async function start() {
@@ -138,9 +136,7 @@
     exposeForExistingApp(compact);
 
     if (db) {
-      try {
-        await writeCache(db, { [CACHE_KEY]: compact, [VERSION_KEY]: version });
-      } catch {}
+      try { await writeCache(db, { [CACHE_KEY]: compact, [VERSION_KEY]: version }); } catch {}
     }
 
     await loadApp();
