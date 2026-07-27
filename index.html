@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./ui-v4.css?v=14">
   <link rel="stylesheet" href="./ui-v5.css?v=14">
   <link rel="stylesheet" href="./ui-v6.css?v=14">
-  <link rel="stylesheet" href="./ui-v7.css?v=16">
+  <link rel="stylesheet" href="./ui-v7.css?v=17">
 </head>
 <body>
   <main class="shell">
@@ -76,7 +76,11 @@
 
     <section id="status" class="status" hidden></section>
     <section id="tweetList" class="tweet-list" aria-label="投稿一覧"></section>
-    <button id="loadMore" class="load-more" type="button" hidden>さらに表示</button>
+    <nav id="pagination" class="pagination" aria-label="投稿一覧のページ" hidden>
+      <button id="prevPage" class="secondary" type="button">前の100件</button>
+      <span id="pageLabel" aria-live="polite">1 / 1ページ</span>
+      <button id="nextPage" class="secondary" type="button">次の100件</button>
+    </nav>
   </main>
 
   <dialog id="deletedDialog">
@@ -106,6 +110,6 @@
     </form>
   </dialog>
 
-  <script src="./data-loader-v10.js?v=17"></script>
+  <script src="./data-loader-v10.js?v=18"></script>
 </body>
 </html>
