@@ -1,34 +1,42 @@
 (() => {
   'use strict';
 
-  const STORAGE_KEY = 'twitterdb:deleted:v1';
+  const TOKEN_KEY = 'twitterdb:github-token:v1';
   const PAGE_SIZE = 100;
   const ACCOUNT = 'p_horeer';
+  const OWNER = '4k29';
+  const REPO = 'TwitterDB';
+  const BRANCH = 'main';
+  const STATE_PATH = 'deleted.json';
+  const API_BASE = `https://api.github.com/repos/${OWNER}/${REPO}`;
 
   const $ = (id) => document.getElementById(id);
   const els = {
     query: $('query'), fromDate: $('fromDate'), toDate: $('toDate'), type: $('typeFilter'),
     reply: $('replyFilter'), sort: $('sortOrder'), reset: $('resetFilters'), resultCount: $('resultCount'),
-    rangeLabel: $('rangeLabel'), status: $('status'), list: $('tweetList'), loadMore: $('loadMore'),
+    rangeLabel: $('rangeLabel'), syncState: $('syncState'), status: $('status'), list: $('tweetList'), loadMore: $('loadMore'),
     showDeleted: $('showDeleted'), deletedCount: $('deletedCount'), deleteDialog: $('deleteDialog'),
     deleteExcerpt: $('deleteExcerpt'), confirmDelete: $('confirmDelete'), deletedDialog: $('deletedDialog'),
-    closeDeleted: $('closeDeleted'), deletedQuery: $('deletedQuery'), deletedList: $('deletedList')
+    closeDeleted: $('closeDeleted'), deletedQuery: $('deletedQuery'), deletedList: $('deletedList'),
+    syncSettings: $('syncSettings'), syncDialog: $('syncDialog'), syncForm: $('syncForm'), closeSync: $('closeSync'),
+    githubToken: $('githubToken'), saveToken: $('saveToken'), clearToken: $('clearToken'), syncMessage: $('syncMessage')
   };
 
   let allTweets = [];
   let filtered = [];
   let visibleCount = PAGE_SIZE;
   let pendingDeleteId = null;
-  let deletedIds = loadDeleted();
+  let deletedIds = new Set();
+  let remoteSha = null;
+  let writeInProgress = false;
 
-  function loadDeleted() {
-    try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
-    catch { return new Set(); }
+  function getToken() {
+    return localStorage.getItem(TOKEN_KEY) || '';
   }
 
-  function saveDeleted() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...deletedIds]));
-    els.deletedCount.textContent = deletedIds.size.toLocaleString('ja-JP');
+  function setToken(token) {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
   }
 
   function archiveRows() {
@@ -82,6 +90,108 @@
 
   function escapeHtml(value) {
     return String(value).replace(/[&<>'"]/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' })[char]);
+  }
+
+  function decodeBase64Utf8(value) {
+    const binary = atob(String(value).replace(/\n/g, ''));
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  }
+
+  function encodeBase64Utf8(value) {
+    const bytes = new TextEncoder().encode(value);
+    let binary = '';
+    bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+    return btoa(binary);
+  }
+
+  async function githubRequest(path, options = {}) {
+    const token = options.token ?? getToken();
+    const headers = {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(options.headers || {})
+    };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(`${API_BASE}${path}`, { ...options, headers, token: undefined });
+    if (!response.ok) {
+      let detail = '';
+      try { detail = (await response.json()).message || ''; } catch {}
+      const error = new Error(detail || `GitHub API error ${response.status}`);
+      error.status = response.status;
+      throw error;
+    }
+    return response.status === 204 ? null : response.json();
+  }
+
+  async function loadRemoteState() {
+    els.syncState.textContent = '削除状態を同期しています…';
+    try {
+      const data = await githubRequest(`/contents/${STATE_PATH}?ref=${encodeURIComponent(BRANCH)}&t=${Date.now()}`, { token: '' });
+      remoteSha = data.sha;
+      const parsed = JSON.parse(decodeBase64Utf8(data.content));
+      deletedIds = new Set(Array.isArray(parsed.deletedIds) ? parsed.deletedIds.map(String) : []);
+      els.deletedCount.textContent = deletedIds.size.toLocaleString('ja-JP');
+      els.syncState.textContent = getToken() ? 'GitHub同期：接続済み' : 'GitHub同期：閲覧のみ（同期設定が必要）';
+      applyFilters();
+      return true;
+    } catch (error) {
+      els.syncState.textContent = '削除状態を読み込めませんでした';
+      showStatus(`deleted.jsonの読み込みに失敗しました。${escapeHtml(error.message)}`, true);
+      return false;
+    }
+  }
+
+  async function fetchWritableState(token) {
+    const data = await githubRequest(`/contents/${STATE_PATH}?ref=${encodeURIComponent(BRANCH)}&t=${Date.now()}`, { token });
+    const parsed = JSON.parse(decodeBase64Utf8(data.content));
+    return {
+      sha: data.sha,
+      ids: new Set(Array.isArray(parsed.deletedIds) ? parsed.deletedIds.map(String) : [])
+    };
+  }
+
+  async function saveRemoteMutation(mutator, commitMessage) {
+    const token = getToken();
+    if (!token) {
+      openSyncDialog('削除・復元を同期するには、この端末でGitHubの同期設定をしてください。');
+      throw new Error('GitHubの同期設定が必要です');
+    }
+    if (writeInProgress) throw new Error('別の同期処理が進行中です');
+    writeInProgress = true;
+    els.syncState.textContent = 'GitHubへ保存しています…';
+    try {
+      const latest = await fetchWritableState(token);
+      mutator(latest.ids);
+      const body = JSON.stringify({
+        deletedIds: [...latest.ids].sort(),
+        updatedAt: new Date().toISOString()
+      }, null, 2) + '\n';
+      const result = await githubRequest(`/contents/${STATE_PATH}`, {
+        method: 'PUT',
+        token,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: commitMessage,
+          content: encodeBase64Utf8(body),
+          sha: latest.sha,
+          branch: BRANCH
+        })
+      });
+      remoteSha = result.content?.sha || null;
+      deletedIds = latest.ids;
+      els.deletedCount.textContent = deletedIds.size.toLocaleString('ja-JP');
+      els.syncState.textContent = 'GitHub同期：保存しました';
+      hideStatus();
+      applyFilters();
+      return true;
+    } catch (error) {
+      els.syncState.textContent = 'GitHub同期：保存失敗';
+      showStatus(`GitHubへの保存に失敗しました。${escapeHtml(error.message)}`, true);
+      throw error;
+    } finally {
+      writeInProgress = false;
+    }
   }
 
   function populateReplyFilter() {
@@ -166,25 +276,30 @@
   function openDeleteDialog(id) {
     const tweet = allTweets.find((item) => item.id === id);
     if (!tweet) return;
+    if (!getToken()) {
+      openSyncDialog('先にGitHub同期を設定してください。設定後、もう一度削除を押してください。');
+      return;
+    }
     pendingDeleteId = id;
     const [date] = formatDate(tweet.date);
     els.deleteExcerpt.textContent = `${date}\n${tweet.text.slice(0, 220)}${tweet.text.length > 220 ? '…' : ''}`;
     els.deleteDialog.showModal();
   }
 
-  function deletePending() {
+  async function deletePending() {
     if (!pendingDeleteId) return;
-    deletedIds.add(pendingDeleteId);
+    const id = pendingDeleteId;
     pendingDeleteId = null;
-    saveDeleted();
-    applyFilters();
+    try {
+      await saveRemoteMutation((ids) => ids.add(id), `Exclude tweet ${id}`);
+    } catch {}
   }
 
-  function restoreTweet(id) {
-    deletedIds.delete(id);
-    saveDeleted();
-    renderDeleted();
-    applyFilters();
+  async function restoreTweet(id) {
+    try {
+      await saveRemoteMutation((ids) => ids.delete(id), `Restore tweet ${id}`);
+      renderDeleted();
+    } catch {}
   }
 
   function renderDeleted() {
@@ -214,10 +329,55 @@
     applyFilters();
   }
 
-  function init() {
+  function showStatus(message, isError = false) {
+    els.status.hidden = false;
+    els.status.innerHTML = message;
+    els.status.dataset.kind = isError ? 'error' : 'info';
+  }
+
+  function hideStatus() {
+    els.status.hidden = true;
+    els.status.textContent = '';
+  }
+
+  function openSyncDialog(message = '') {
+    els.githubToken.value = getToken();
+    els.syncMessage.textContent = message || (getToken() ? 'この端末にはトークンが保存されています。' : 'この端末ではまだ同期設定されていません。');
+    els.syncDialog.showModal();
+  }
+
+  async function verifyAndSaveToken(event) {
+    event.preventDefault();
+    const token = els.githubToken.value.trim();
+    if (!token) {
+      els.syncMessage.textContent = 'トークンを入力してください。';
+      return;
+    }
+    els.saveToken.disabled = true;
+    els.syncMessage.textContent = '接続を確認しています…';
+    try {
+      await fetchWritableState(token);
+      setToken(token);
+      els.syncMessage.textContent = '接続できました。この端末の同期設定を保存しました。';
+      els.syncState.textContent = 'GitHub同期：接続済み';
+      await loadRemoteState();
+    } catch (error) {
+      els.syncMessage.textContent = `接続できませんでした：${error.message}`;
+    } finally {
+      els.saveToken.disabled = false;
+    }
+  }
+
+  function clearToken() {
+    setToken('');
+    els.githubToken.value = '';
+    els.syncMessage.textContent = 'この端末からトークンを削除しました。閲覧と同期データの読み込みは引き続きできます。';
+    els.syncState.textContent = 'GitHub同期：閲覧のみ（同期設定が必要）';
+  }
+
+  async function init() {
     const rows = archiveRows();
     allTweets = rows.map(normalizeRow).filter((tweet) => tweet.id && tweet.text);
-    saveDeleted();
 
     if (!allTweets.length) {
       els.status.hidden = false;
@@ -228,6 +388,7 @@
 
     populateReplyFilter();
     applyFilters();
+    await loadRemoteState();
   }
 
   [els.query, els.fromDate, els.toDate, els.type, els.reply, els.sort].forEach((element) => {
@@ -242,6 +403,10 @@
   els.showDeleted.addEventListener('click', () => { renderDeleted(); els.deletedDialog.showModal(); });
   els.closeDeleted.addEventListener('click', () => els.deletedDialog.close());
   els.deletedQuery.addEventListener('input', renderDeleted);
+  els.syncSettings.addEventListener('click', () => openSyncDialog());
+  els.closeSync.addEventListener('click', () => els.syncDialog.close());
+  els.syncForm.addEventListener('submit', verifyAndSaveToken);
+  els.clearToken.addEventListener('click', clearToken);
 
   init();
 })();
