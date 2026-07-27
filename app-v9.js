@@ -31,6 +31,7 @@
   let filtered = [];
   let visibleCount = PAGE_SIZE;
   let deletedIds = new Set();
+  let totalPurged = 0;
   let tweetStatuses = {};
   let selectedIds = new Set();
   let writeInProgress = false;
@@ -243,12 +244,20 @@
     updateBulkToolbar();
   }
 
+  function updateDeletedCount() {
+    els.deletedCount.textContent = (totalPurged + deletedIds.size).toLocaleString('ja-JP');
+  }
+
   async function loadRemoteState() {
     setSync('確認中…', 'loading', '削除状態を同期しています…');
     try {
-      const remote = await readJsonFile(DELETED_PATH, '');
+      const [remote, purge] = await Promise.all([
+        readJsonFile(DELETED_PATH, ''),
+        readJsonFile(PURGE_RESULT_PATH, '')
+      ]);
       deletedIds = new Set(Array.isArray(remote.value.deletedIds) ? remote.value.deletedIds.map(String) : []);
-      els.deletedCount.textContent = deletedIds.size.toLocaleString('ja-JP');
+      totalPurged = Math.max(0, Number(purge.value?.totalPurged ?? purge.value?.removedCount ?? 0) || 0);
+      updateDeletedCount();
       setSync(getToken() ? '接続済み' : '未設定', getToken() ? 'connected' : 'unset', getToken() ? 'GitHub同期：接続済み' : 'GitHub同期：閲覧のみ');
     } catch (error) {
       setSync('読込失敗', 'error', `削除状態を読み込めませんでした：${error.message}`);
@@ -283,7 +292,7 @@
       });
       deletedIds = ids;
       selectedIds.clear();
-      els.deletedCount.textContent = deletedIds.size.toLocaleString('ja-JP');
+      updateDeletedCount();
       setSync('保存済み', 'saved');
       applyFilters({ rebuildMentions: true });
       return true;
