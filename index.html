@@ -6,11 +6,11 @@
   <meta name="color-scheme" content="dark">
   <title>TwitterDB</title>
   <meta name="description" content="過去ツイートを絞り込み、リンク先の存在状態を確認できる個人用データベース">
-  <link rel="stylesheet" href="./styles.css?v=12">
-  <link rel="stylesheet" href="./ui-v3.css?v=12">
-  <link rel="stylesheet" href="./ui-v4.css?v=12">
-  <link rel="stylesheet" href="./ui-v5.css?v=12">
-  <link rel="stylesheet" href="./ui-v6.css?v=12">
+  <link rel="stylesheet" href="./styles.css?v=13">
+  <link rel="stylesheet" href="./ui-v3.css?v=13">
+  <link rel="stylesheet" href="./ui-v4.css?v=13">
+  <link rel="stylesheet" href="./ui-v5.css?v=13">
+  <link rel="stylesheet" href="./ui-v6.css?v=13">
 </head>
 <body>
   <main class="shell">
@@ -35,6 +35,19 @@
           <option value="reply">返信</option>
           <option value="quote">引用</option>
           <option value="repost">リポスト</option>
+        </select>
+      </label>
+      <label><span>投稿テーマ</span>
+        <select id="topicFilter">
+          <option value="all">すべて</option>
+          <option value="apple">Apple</option>
+          <option value="nothing">Nothing</option>
+          <option value="gadget">ガジェット</option>
+          <option value="photo">写真・映像</option>
+          <option value="dev">開発・UI</option>
+          <option value="study">勉強・進路</option>
+          <option value="daily">日常</option>
+          <option value="other">その他</option>
         </select>
       </label>
       <label><span>返信先・メンション</span><select id="replyFilter"><option value="all">すべて</option></select></label>
@@ -95,6 +108,6 @@
     </form>
   </dialog>
 
-  <script src="./data-loader-v9.js?v=12"></script>
+  <script src="./data-loader-v9.js?v=13"></script>
 </body>
 </html>
