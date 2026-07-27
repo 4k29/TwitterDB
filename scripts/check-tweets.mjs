@@ -62,9 +62,9 @@ async function checkTweet(id) {
 }
 
 for (const id of ids) {
-  const result = await checkTweet(id);
-  store.tweets[id] = result;
-  if (result.status === 'deleted') deletedIds.add(id);
+  // A repeated check always replaces the previous result for this tweet.
+  // This lets an existing tweet become deleted, or a deleted tweet become existing.
+  store.tweets[id] = await checkTweet(id);
   await new Promise((resolve) => setTimeout(resolve, 350));
 }
 
