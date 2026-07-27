@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./ui-v4.css?v=14">
   <link rel="stylesheet" href="./ui-v5.css?v=14">
   <link rel="stylesheet" href="./ui-v6.css?v=14">
+  <link rel="stylesheet" href="./ui-v7.css?v=15">
 </head>
 <body>
   <main class="shell">
@@ -39,6 +40,14 @@
         </select>
       </label>
       <label><span>返信先・メンション</span><select id="replyFilter"><option value="all">すべて</option></select></label>
+      <label><span>分類軸</span>
+        <select id="categoryAxis">
+          <option value="topic">詳細テーマ</option>
+          <option value="subject">投稿対象</option>
+          <option value="postStyle">投稿の型</option>
+        </select>
+      </label>
+      <label><span>ジャンル</span><select id="categoryFilter"><option value="all">すべて</option></select></label>
       <label><span>並び順</span>
         <select id="sortOrder">
           <option value="new">新しい順</option>
@@ -55,7 +64,7 @@
       <p><strong id="selectedCount">0</strong>件選択中</p>
       <button id="selectVisible" class="secondary" type="button">表示中をすべて選択</button>
       <button id="clearSelected" class="secondary" type="button" disabled>選択解除</button>
-      <button id="deleteSelected" class="bulk-delete" type="button" disabled>選択した投稿を削除</button>
+      <button id="checkSelected" class="bulk-check" type="button" disabled>選択した投稿を確認</button>
     </section>
 
     <section class="summary" aria-live="polite">
@@ -96,6 +105,6 @@
     </form>
   </dialog>
 
-  <script src="./data-loader-v9.js?v=14"></script>
+  <script src="./data-loader-v10.js?v=15"></script>
 </body>
 </html>
