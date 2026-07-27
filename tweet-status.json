@@ -5777,7 +5777,37 @@
       "checkedAt": "2026-07-27T07:26:36.768Z",
       "httpStatus": 200,
       "source": "x-oembed"
+    },
+    "1886773710108913911": {
+      "status": "deleted",
+      "checkedAt": "2026-07-27T07:28:40.306Z",
+      "httpStatus": 404,
+      "source": "x-oembed"
+    },
+    "1886895915216330779": {
+      "status": "deleted",
+      "checkedAt": "2026-07-27T07:28:40.986Z",
+      "httpStatus": 404,
+      "source": "x-oembed"
+    },
+    "1891904357446324691": {
+      "status": "deleted",
+      "checkedAt": "2026-07-27T07:28:41.606Z",
+      "httpStatus": 404,
+      "source": "x-oembed"
+    },
+    "1891913225169482223": {
+      "status": "deleted",
+      "checkedAt": "2026-07-27T07:28:42.229Z",
+      "httpStatus": 404,
+      "source": "x-oembed"
+    },
+    "1891914228451209309": {
+      "status": "deleted",
+      "checkedAt": "2026-07-27T07:28:42.755Z",
+      "httpStatus": 404,
+      "source": "x-oembed"
     }
   },
-  "updatedAt": "2026-07-27T07:26:37.198Z"
+  "updatedAt": "2026-07-27T07:28:43.289Z"
 }
