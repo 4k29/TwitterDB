@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./ui-v4.css?v=14">
   <link rel="stylesheet" href="./ui-v5.css?v=14">
   <link rel="stylesheet" href="./ui-v6.css?v=14">
-  <link rel="stylesheet" href="./ui-v7.css?v=17">
+  <link rel="stylesheet" href="./ui-v7.css?v=18">
 </head>
 <body>
   <main class="shell">
@@ -23,6 +23,7 @@
       <div class="header-actions">
         <a href="./analytics/" class="header-link">投稿分析</a>
         <button id="syncSettings" class="sync-button" type="button" aria-haspopup="dialog" aria-controls="syncDialog">同期設定を開く</button>
+        <button id="showKept" class="secondary" type="button">ツイ消ししない <span id="keptCount">0</span></button>
         <button id="showDeleted" class="secondary" type="button">削除済み <span id="deletedCount">0</span></button>
         <span id="syncBadge" class="sync-status" data-state="loading">確認中…</span>
         <span id="checkBadge" class="check-status" data-state="idle">リンク未確認</span>
@@ -50,8 +51,8 @@
       <label><span>ジャンル</span><select id="categoryFilter"><option value="all">すべて</option></select></label>
       <label><span>並び順</span>
         <select id="sortOrder">
-          <option value="new">新しい順</option>
           <option value="old">古い順</option>
+          <option value="new">新しい順</option>
           <option value="likes">いいね順</option>
           <option value="reposts">リポスト順</option>
         </select>
@@ -64,6 +65,7 @@
       <p><strong id="selectedCount">0</strong>件選択中</p>
       <button id="selectVisible" class="secondary" type="button">表示中をすべて選択</button>
       <button id="clearSelected" class="secondary" type="button" disabled>選択解除</button>
+      <button id="keepSelected" class="keep-selected" type="button" disabled>ツイ消ししない投稿へ</button>
       <button id="checkSelected" class="bulk-check" type="button" disabled>選択した投稿を確認</button>
       <button id="purgeDeleted" class="purge-deleted" type="button">削除済みをDBから削除</button>
     </section>
@@ -94,6 +96,17 @@
     </div>
   </dialog>
 
+  <dialog id="keptDialog">
+    <div class="dialog-card kept-card">
+      <div class="dialog-head">
+        <div><p class="eyebrow">TwitterDB</p><h2>ツイ消ししない投稿</h2></div>
+        <button id="closeKept" class="secondary" type="button">閉じる</button>
+      </div>
+      <input id="keptQuery" type="search" placeholder="残す投稿を検索">
+      <div id="keptList" class="kept-list"></div>
+    </div>
+  </dialog>
+
   <dialog id="syncDialog">
     <form id="syncForm" class="dialog-card">
       <div class="dialog-head">
@@ -110,6 +123,6 @@
     </form>
   </dialog>
 
-  <script src="./data-loader-v10.js?v=18"></script>
+  <script src="./data-loader-v10.js?v=19"></script>
 </body>
 </html>
