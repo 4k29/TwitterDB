@@ -41,3 +41,21 @@
   .pagination button{min-width:0;flex:1}
   .pagination span{min-width:108px;font-size:11px}
 }
+
+.keep-selected{min-height:36px;background:#f5f5f7;border:1px solid #f5f5f7;color:#0a0a0a;font-weight:650}
+.keep-selected:disabled{opacity:.45;cursor:default}
+.kept-card{width:min(900px,100%)}
+.kept-list{display:grid;gap:8px;margin-top:14px}
+.kept-row{display:grid;grid-template-columns:100px minmax(0,1fr) 58px 112px;gap:12px;align-items:center;padding:12px;border:1px solid #303034;border-radius:12px;background:#151517}
+.kept-row>a{color:#f5f5f7;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.kept-row>a:hover{color:#fff;text-decoration:underline}
+.restore-kept{white-space:nowrap}
+@media(max-width:700px){
+  .kept-row{grid-template-columns:80px minmax(0,1fr) 92px}
+  .kept-row .metric{display:none}
+}
+@media(max-width:520px){
+  .kept-row{grid-template-columns:1fr}
+  .kept-row .tweet-date{font-size:11px}
+  .restore-kept{width:100%}
+}
