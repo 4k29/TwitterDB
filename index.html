@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="color-scheme" content="dark">
   <title>TwitterDB</title>
-  <meta name="description" content="過去ツイートを検索・絞り込みできる個人用データベース">
-  <link rel="stylesheet" href="./styles.css?v=3">
-  <link rel="stylesheet" href="./ui-v3.css?v=3">
+  <meta name="description" content="過去ツイートを絞り込みできる個人用データベース">
+  <link rel="stylesheet" href="./styles.css?v=4">
+  <link rel="stylesheet" href="./ui-v3.css?v=4">
+  <link rel="stylesheet" href="./ui-v4.css?v=4">
 </head>
 <body>
   <main class="shell">
@@ -23,13 +24,7 @@
       </div>
     </header>
 
-    <section class="filters" aria-label="検索条件">
-      <label class="search-field">
-        <span>検索</span>
-        <input id="query" type="search" placeholder="投稿本文を検索" autocomplete="off">
-      </label>
-      <label><span>開始日</span><input id="fromDate" type="date"></label>
-      <label><span>終了日</span><input id="toDate" type="date"></label>
+    <section class="filters" aria-label="絞り込み条件">
       <label><span>投稿種別</span>
         <select id="typeFilter">
           <option value="all">すべて</option>
@@ -91,6 +86,6 @@
 
   <script>window.YTD = window.YTD || { tweets: {} };</script>
   <script src="./tweets.js"></script>
-  <script src="./app-v3.js?v=3"></script>
+  <script src="./app-v4.js?v=4"></script>
 </body>
 </html>
