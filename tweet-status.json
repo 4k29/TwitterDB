@@ -3043,9 +3043,9 @@
       "source": "x-oembed"
     },
     "1854470184083615925": {
-      "status": "exists",
-      "checkedAt": "2026-07-27T13:36:20.756Z",
-      "httpStatus": 200,
+      "status": "deleted",
+      "checkedAt": "2026-07-27T13:38:57.042Z",
+      "httpStatus": 404,
       "source": "x-oembed"
     },
     "1854470350735659245": {
@@ -3397,5 +3397,5 @@
       "source": "x-oembed"
     }
   },
-  "updatedAt": "2026-07-27T13:36:45.637Z"
+  "updatedAt": "2026-07-27T13:38:57.796Z"
 }
