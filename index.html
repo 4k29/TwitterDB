@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="dark">
   <title>TwitterDB</title>
   <meta name="description" content="過去ツイートを検索・絞り込みできる個人用データベース">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=2">
 </head>
 <body>
   <main class="shell">
@@ -16,7 +16,7 @@
         <h1>過去ツイートを、探す。</h1>
       </div>
       <div class="header-actions">
-        <button id="syncSettings" class="secondary" type="button">同期設定</button>
+        <button id="syncSettings" class="sync-button" type="button" aria-haspopup="dialog" aria-controls="syncDialog">同期設定を開く</button>
         <button id="showDeleted" class="secondary" type="button">削除済み <span id="deletedCount">0</span></button>
       </div>
     </header>
@@ -101,6 +101,6 @@
 
   <script>window.YTD = window.YTD || { tweets: {} };</script>
   <script src="./tweets.js"></script>
-  <script src="./app.js"></script>
+  <script src="./app.js?v=2"></script>
 </body>
 </html>
