@@ -10,6 +10,8 @@
   const DELETED_PATH = 'deleted.json';
   const STATUS_PATH = 'tweet-status.json';
   const WORKFLOW_PATH = 'check-tweets.yml';
+  const PURGE_WORKFLOW_PATH = 'purge-deleted.yml';
+  const PURGE_RESULT_PATH = 'purge-result.json';
   const API_BASE = `https://api.github.com/repos/${OWNER}/${REPO}`;
   const $ = (id) => document.getElementById(id);
 
@@ -295,33 +297,33 @@
   }
 
   async function purgeConfirmedDeleted() {
-    if (!getToken()) { openSyncDialog('削除済み投稿の整理にはContentsのRead and write権限が必要です。'); return; }
+    if (!getToken()) { openSyncDialog('削除済み投稿の整理にはActions権限が必要です。'); return; }
     if (writeInProgress) return;
     writeInProgress = true;
     els.purgeDeleted.disabled = true;
-    setSync('整理中…', 'saving');
+    setSync('削除中…', 'saving');
     try {
-      const [latest, statusFile] = await Promise.all([
-        readJsonFile(DELETED_PATH, getToken()),
-        readJsonFile(STATUS_PATH, getToken())
-      ]);
-      const ids = Object.entries(statusFile.value?.tweets || {})
-        .filter(([, value]) => value?.status === 'deleted')
-        .map(([id]) => String(id))
-        .sort();
-      const content = JSON.stringify({ deletedIds: ids, updatedAt: new Date().toISOString() }, null, 2) + '\n';
-      await githubRequest(`/contents/${DELETED_PATH}`, {
-        method: 'PUT',
+      let baseline = '';
+      try {
+        baseline = (await readJsonFile(PURGE_RESULT_PATH, getToken())).value?.updatedAt || '';
+      } catch {}
+      await githubRequest(`/actions/workflows/${encodeURIComponent(PURGE_WORKFLOW_PATH)}/dispatches`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: `Remove ${ids.length} confirmed deleted tweets`, content: encodeBase64Utf8(content), sha: latest.sha, branch: BRANCH })
+        body: JSON.stringify({ ref: BRANCH })
       });
-      deletedIds = new Set(ids);
-      selectedIds.clear();
-      els.deletedCount.textContent = ids.length.toLocaleString('ja-JP');
-      setSync(`${ids.length.toLocaleString('ja-JP')}件削除`, 'saved');
-      applyFilters({ rebuildMentions: true, rebuildCategories: true });
+      for (let attempt = 0; attempt < 36; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 7000 : 5000));
+        const result = (await readJsonFile(PURGE_RESULT_PATH, getToken())).value || {};
+        if (result.updatedAt && result.updatedAt !== baseline) {
+          setSync(`${Number(result.removedCount || 0).toLocaleString('ja-JP')}件削除`, 'saved');
+          setTimeout(() => window.location.reload(), 1200);
+          return;
+        }
+      }
+      setSync('処理中', 'saving', 'GitHub側で削除処理を続けています。少し待って再読み込みしてください。');
     } catch (error) {
-      setSync('整理失敗', 'error', `削除済み投稿を整理できませんでした：${error.message}`);
+      setSync('削除失敗', 'error', `削除済み投稿をDBから削除できませんでした：${error.message}`);
     } finally {
       writeInProgress = false;
       els.purgeDeleted.disabled = false;
