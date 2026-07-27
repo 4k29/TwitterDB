@@ -8,6 +8,7 @@
   const REPO = 'TwitterDB';
   const BRANCH = 'main';
   const DELETED_PATH = 'deleted.json';
+  const KEPT_PATH = 'kept.json';
   const STATUS_PATH = 'tweet-status.json';
   const WORKFLOW_PATH = 'check-tweets.yml';
   const PURGE_WORKFLOW_PATH = 'purge-deleted.yml';
@@ -19,18 +20,20 @@
     type: $('typeFilter'), reply: $('replyFilter'), axis: $('categoryAxis'), category: $('categoryFilter'), sort: $('sortOrder'), reset: $('resetFilters'),
     resultCount: $('resultCount'), rangeLabel: $('rangeLabel'), syncState: $('syncState'), syncBadge: $('syncBadge'),
     checkBadge: $('checkBadge'), checkVisible: $('checkVisible'), status: $('status'), list: $('tweetList'),
-    pagination: $('pagination'), prevPage: $('prevPage'), nextPage: $('nextPage'), pageLabel: $('pageLabel'), showDeleted: $('showDeleted'), deletedCount: $('deletedCount'),
-    deletedDialog: $('deletedDialog'), closeDeleted: $('closeDeleted'), deletedQuery: $('deletedQuery'), deletedList: $('deletedList'),
+    pagination: $('pagination'), prevPage: $('prevPage'), nextPage: $('nextPage'), pageLabel: $('pageLabel'),
+    showKept: $('showKept'), keptCount: $('keptCount'), keptDialog: $('keptDialog'), closeKept: $('closeKept'), keptQuery: $('keptQuery'), keptList: $('keptList'),
+    showDeleted: $('showDeleted'), deletedCount: $('deletedCount'), deletedDialog: $('deletedDialog'), closeDeleted: $('closeDeleted'), deletedQuery: $('deletedQuery'), deletedList: $('deletedList'),
     syncSettings: $('syncSettings'), syncDialog: $('syncDialog'), syncForm: $('syncForm'), closeSync: $('closeSync'),
     githubToken: $('githubToken'), saveToken: $('saveToken'), clearToken: $('clearToken'), syncMessage: $('syncMessage'),
     bulkActions: $('bulkActions'), selectedCount: $('selectedCount'), selectVisible: $('selectVisible'),
-    clearSelected: $('clearSelected'), checkSelected: $('checkSelected'), purgeDeleted: $('purgeDeleted')
+    clearSelected: $('clearSelected'), keepSelected: $('keepSelected'), checkSelected: $('checkSelected'), purgeDeleted: $('purgeDeleted')
   };
 
   let allTweets = [];
   let filtered = [];
   let currentPage = 0;
   let deletedIds = new Set();
+  let keptIds = new Set();
   let totalPurged = 0;
   let tweetStatuses = {};
   let selectedIds = new Set();
@@ -153,7 +156,7 @@
     const previous = els.reply.value;
     const labels = new Map();
     for (const tweet of allTweets) {
-      if (deletedIds.has(tweet.id)) continue;
+      if (deletedIds.has(tweet.id) || keptIds.has(tweet.id)) continue;
       tweet.mentionKeys.forEach((key, index) => {
         if (!labels.has(key)) labels.set(key, tweet.mentions[index]);
       });
@@ -166,7 +169,7 @@
   function rebuildCategoryFilter() {
     const key = els.axis.value;
     const previous = els.category.value;
-    const labels = [...new Set(allTweets.filter((tweet) => !deletedIds.has(tweet.id)).map((tweet) => tweet[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ja'));
+    const labels = [...new Set(allTweets.filter((tweet) => !deletedIds.has(tweet.id) && !keptIds.has(tweet.id)).map((tweet) => tweet[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ja'));
     els.category.innerHTML = '<option value="all">すべて</option>' + labels.map((label) => `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`).join('');
     els.category.value = labels.includes(previous) ? previous : 'all';
   }
@@ -180,7 +183,7 @@
     const categoryKey = els.axis.value;
     const category = els.category.value;
     filtered = allTweets.filter((tweet) => {
-      if (deletedIds.has(tweet.id)) return false;
+      if (deletedIds.has(tweet.id) || keptIds.has(tweet.id)) return false;
       if (type !== 'all' && tweet.type !== type) return false;
       if (mention !== 'all' && !tweet.mentionKeys.includes(mention)) return false;
       if (category !== 'all' && tweet[categoryKey] !== category) return false;
@@ -226,6 +229,7 @@
     const count = selectedIds.size;
     els.selectedCount.textContent = count.toLocaleString('ja-JP');
     els.clearSelected.disabled = count === 0;
+    els.keepSelected.disabled = count === 0 || writeInProgress;
     els.checkSelected.disabled = count === 0 || checkInProgress;
     els.purgeDeleted.disabled = writeInProgress;
     els.bulkActions.dataset.active = count ? 'true' : 'false';
@@ -261,16 +265,23 @@
     els.deletedCount.textContent = (totalPurged + deletedIds.size).toLocaleString('ja-JP');
   }
 
+  function updateKeptCount() {
+    els.keptCount.textContent = keptIds.size.toLocaleString('ja-JP');
+  }
+
   async function loadRemoteState() {
     setSync('確認中…', 'loading', '削除状態を同期しています…');
     try {
-      const [remote, purge] = await Promise.all([
+      const [remote, purge, kept] = await Promise.all([
         readJsonFile(DELETED_PATH, ''),
-        readJsonFile(PURGE_RESULT_PATH, '')
+        readJsonFile(PURGE_RESULT_PATH, ''),
+        readJsonFile(KEPT_PATH, '')
       ]);
       deletedIds = new Set(Array.isArray(remote.value.deletedIds) ? remote.value.deletedIds.map(String) : []);
+      keptIds = new Set(Array.isArray(kept.value.keptIds) ? kept.value.keptIds.map(String) : []);
       totalPurged = Math.max(0, Number(purge.value?.totalPurged ?? purge.value?.removedCount ?? 0) || 0);
       updateDeletedCount();
+      updateKeptCount();
       setSync(getToken() ? '接続済み' : '未設定', getToken() ? 'connected' : 'unset', getToken() ? 'GitHub同期：接続済み' : 'GitHub同期：閲覧のみ');
     } catch (error) {
       setSync('読込失敗', 'error', `削除状態を読み込めませんでした：${error.message}`);
@@ -311,6 +322,36 @@
       return true;
     } catch (error) {
       setSync('保存失敗', 'error', `GitHub同期：保存失敗（${error.message}）`);
+      return false;
+    } finally {
+      writeInProgress = false;
+      updateBulkToolbar();
+    }
+  }
+
+  async function saveKeptIds(mutator, message) {
+    if (!getToken()) { openSyncDialog('ツイ消ししない投稿を保存するには、先にGitHub同期を設定してください。'); return false; }
+    if (writeInProgress) return false;
+    writeInProgress = true;
+    setSync('保存中…', 'saving');
+    updateBulkToolbar();
+    try {
+      const latest = await readJsonFile(KEPT_PATH, getToken());
+      const ids = new Set(Array.isArray(latest.value.keptIds) ? latest.value.keptIds.map(String) : []);
+      mutator(ids);
+      const content = JSON.stringify({ keptIds: [...ids].sort(), updatedAt: new Date().toISOString() }, null, 2) + '\n';
+      await githubRequest(`/contents/${KEPT_PATH}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, content: encodeBase64Utf8(content), sha: latest.sha, branch: BRANCH })
+      });
+      keptIds = ids;
+      selectedIds.clear();
+      updateKeptCount();
+      setSync('保存済み', 'saved');
+      applyFilters({ rebuildMentions: true, rebuildCategories: true });
+      return true;
+    } catch (error) {
+      setSync('保存失敗', 'error', `ツイ消ししない投稿を保存できませんでした：${error.message}`);
       return false;
     } finally {
       writeInProgress = false;
@@ -387,6 +428,12 @@
     }
   }
 
+  function renderKept() {
+    const query = els.keptQuery.value.trim().toLocaleLowerCase('ja');
+    const rows = allTweets.filter((tweet) => keptIds.has(tweet.id) && (!query || tweet.text.toLocaleLowerCase('ja').includes(query))).sort((a, b) => a.timestamp - b.timestamp);
+    els.keptList.innerHTML = rows.length ? rows.map((tweet) => `<article class="kept-row"><div class="tweet-date">${escapeHtml(tweet.dateLabel)}</div><a href="${escapeHtml(tweet.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(tweet.text)}</a><div class="metric">${tweet.likes.toLocaleString('ja-JP')}</div><button class="secondary restore-kept" type="button" data-unkeep-id="${escapeHtml(tweet.id)}">投稿DBに戻す</button></article>`).join('') : '<p class="empty">ツイ消ししない投稿はまだありません。</p>';
+  }
+
   function renderDeleted() {
     const query = els.deletedQuery.value.trim().toLocaleLowerCase('ja');
     const rows = allTweets.filter((tweet) => deletedIds.has(tweet.id) && (!query || tweet.text.toLocaleLowerCase('ja').includes(query))).sort((a, b) => b.timestamp - a.timestamp);
@@ -438,7 +485,7 @@
   els.axis.addEventListener('change', () => { rebuildCategoryFilter(); applyFilters(); });
   els.category.addEventListener('change', () => applyFilters());
   els.reset.addEventListener('click', () => {
-    els.type.value = 'all'; els.reply.value = 'all'; els.axis.value = 'topic'; rebuildCategoryFilter(); els.category.value = 'all'; els.sort.value = 'new'; applyFilters();
+    els.type.value = 'all'; els.reply.value = 'all'; els.axis.value = 'topic'; rebuildCategoryFilter(); els.category.value = 'all'; els.sort.value = 'old'; applyFilters();
   });
   els.prevPage.addEventListener('click', () => {
     currentPage = Math.max(0, currentPage - 1);
@@ -457,6 +504,10 @@
     render();
   });
   els.clearSelected.addEventListener('click', () => { selectedIds.clear(); render(); });
+  els.keepSelected.addEventListener('click', async () => {
+    const ids = [...selectedIds];
+    if (ids.length) await saveKeptIds((kept) => ids.forEach((id) => kept.add(id)), `Keep ${ids.length} tweets`);
+  });
   els.checkSelected.addEventListener('click', () => { const ids = [...selectedIds]; if (ids.length) startCheck(ids); });
   els.purgeDeleted.addEventListener('click', purgeConfirmedDeleted);
   els.list.addEventListener('change', (event) => {
@@ -469,6 +520,17 @@
     const check = event.target.closest('[data-check-id]');
     if (check) { startCheck([check.dataset.checkId]); return; }
 
+  });
+  els.showKept.addEventListener('click', () => { renderKept(); els.keptDialog.showModal(); });
+  els.closeKept.addEventListener('click', () => els.keptDialog.close());
+  els.keptQuery.addEventListener('input', renderKept);
+  els.keptList.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-unkeep-id]');
+    if (!button) return;
+    button.disabled = true;
+    const saved = await saveKeptIds((kept) => kept.delete(button.dataset.unkeepId), `Restore tweet ${button.dataset.unkeepId} to database`);
+    if (saved) renderKept();
+    else button.disabled = false;
   });
   els.showDeleted.addEventListener('click', () => { renderDeleted(); els.deletedDialog.showModal(); });
   els.closeDeleted.addEventListener('click', () => els.deletedDialog.close());
