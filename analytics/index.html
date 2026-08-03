@@ -97,7 +97,7 @@ input:focus,select:focus{border-color:#78787e;box-shadow:0 0 0 3px rgba(255,255,
   <header class="top">
     <div><p class="eyebrow">TwitterDB</p><h1>過去ツイートを、分析する。</h1><p class="subtitle">期間を自由に指定して、投稿内容と反応を比較できます。</p></div>
     <div class="top-actions">
-      <div class="fresh">データ範囲 2024-06-27 – 2026-07-25（日本時間）</div>
+      <div class="fresh" id="dataRange"></div>
       <a class="nav-button" href="../">投稿DB</a>
       <button class="nav-button" id="syncSettings" type="button">同期設定</button>
     </div>
@@ -177,7 +177,10 @@ input:focus,select:focus{border-color:#78787e;box-shadow:0 0 0 3px rgba(255,255,
 <script src="./data.js"></script>
 <script type="module">
 const compressed=Uint8Array.from(atob(window.ANALYTICS_DATA_GZIP),c=>c.charCodeAt(0));const DATA=JSON.parse(await new Response(new Blob([compressed]).stream().pipeThrough(new DecompressionStream("gzip"))).text());
-const MIN="2024-06-27",MAX="2026-07-25";
+const DATES=DATA.map(r=>r.d).filter(Boolean).sort();
+const MIN=DATES[0]||new Date().toISOString().slice(0,10),MAX=DATES.at(-1)||MIN;
+for(const id of ["start","end"]){const input=document.getElementById(id);input.min=MIN;input.max=MAX;input.value=id==="start"?MIN:MAX}
+document.getElementById("dataRange").textContent="データ範囲 "+MIN+" – "+MAX+"（日本時間）";
 const ORIGINAL=new Map(DATA.map(r=>[r.i,{s:r.s,p:r.p,f:r.f}]));
 const BASE_OPTIONS={s:[...new Set(DATA.map(r=>r.s))].sort((a,b)=>a.localeCompare(b,"ja")),p:[...new Set(DATA.map(r=>r.p))].sort((a,b)=>a.localeCompare(b,"ja")),f:[...new Set(DATA.map(r=>r.f))].sort((a,b)=>a.localeCompare(b,"ja"))};
 const CUSTOM_VALUE="__custom__";

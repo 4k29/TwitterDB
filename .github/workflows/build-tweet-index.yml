@@ -1,4 +1,4 @@
-name: Build compact tweet index
+name: Sync derived tweet data
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - tweets.js
-      - scripts/build-tweet-index.mjs
+      - scripts/sync-analytics.mjs
 
 permissions:
   contents: write
@@ -23,16 +23,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Build compact data
-        run: node scripts/build-tweet-index.mjs
-      - name: Commit generated index
+      - name: Sync analytics data
+        run: node scripts/sync-analytics.mjs
+      - name: Commit generated data
         run: |
-          if git diff --quiet -- tweets-index.js; then
-            echo "No index changes"
+          if git diff --quiet -- analytics/data.js analytics/categories.js; then
+            echo "No analytics changes"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tweets-index.js
-          git commit -m "Build compact tweet index"
+          git add analytics/data.js analytics/categories.js
+          git commit -m "Sync derived tweet data"
           git push
