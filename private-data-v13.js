@@ -190,6 +190,96 @@
     return parseAssignment(source, 'tweet-archive');
   }
 
+  async function setupAnalyticsLikesTrend() {
+    if (!isAnalyticsPage || !getStoredToken() || typeof document === 'undefined') return;
+    const trend = document.getElementById('trend');
+    if (!trend) return;
+
+    let rows = [];
+    let deletedIds = new Set();
+    try {
+      const encoded = await assignment('analytics/data.js', getStoredToken());
+      const compressed = Uint8Array.from(atob(encoded), (char) => char.charCodeAt(0));
+      rows = JSON.parse(await new Response(new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'))).text());
+      try {
+        const deleted = await json('deleted.json', getStoredToken());
+        deletedIds = new Set((deleted.deletedIds || []).map(String));
+      } catch {}
+    } catch {
+      return;
+    }
+
+    const tab = document.querySelector('.tab-button[data-tab="trend"]');
+    if (tab) tab.textContent = 'いいねの推移';
+    const section = document.querySelector('#tab-trend .section-head');
+    if (section) {
+      const heading = section.querySelector('h2');
+      const copy = section.querySelector('p');
+      if (heading) heading.textContent = 'いいねの推移';
+      if (copy) copy.textContent = '選択期間の日別いいね合計。反応数はアーカイブ取得時点の値です。';
+    }
+
+    const nf = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1 });
+    let timer = 0;
+
+    function currentRows() {
+      const start = document.getElementById('start')?.value || '';
+      const end = document.getElementById('end')?.value || '';
+      const type = document.getElementById('type')?.value || 'すべて';
+      const key = document.getElementById('themeKey')?.value || 'p';
+      const category = document.getElementById('themeCategory')?.value || '';
+      return rows.filter((row) =>
+        !deletedIds.has(String(row.i)) &&
+        (!start || row.d >= start) &&
+        (!end || row.d <= end) &&
+        (type === 'すべて' || row.t === type) &&
+        (!category || row[key] === category)
+      );
+    }
+
+    function drawLikesTrend() {
+      const selected = currentRows();
+      const byDay = new Map();
+      for (const row of selected) byDay.set(row.d, (byDay.get(row.d) || 0) + Number(row.l || 0));
+      const days = [...byDay].sort((a, b) => a[0].localeCompare(b[0]));
+      if (!days.length) {
+        trend.innerHTML = '<div class="empty" data-likes-trend="true">該当する投稿がありません</div>';
+        return;
+      }
+
+      const W = 900, H = 190, P = 16;
+      const max = Math.max(...days.map(([, likes]) => likes), 1);
+      const pts = days.map(([, likes], index) => [
+        P + (W - P * 2) * (days.length === 1 ? 0.5 : index / (days.length - 1)),
+        H - P - (H - P * 2) * likes / max
+      ]);
+      const line = pts.map((point, index) => `${index ? 'L' : 'M'}${point[0].toFixed(1)} ${point[1].toFixed(1)}`).join(' ');
+      const area = `${line} L ${pts.at(-1)[0]} ${H - P} L ${pts[0][0]} ${H - P} Z`;
+      trend.innerHTML = `<svg class="trend" data-likes-trend="true" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="日別いいね数"><path d="${area}" fill="var(--accent-soft)"/><path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg><div class="axis-labels"><span>${days[0][0]}</span><span>最大 ${nf.format(max)}いいね/日</span><span>${days.at(-1)[0]}</span></div>`;
+    }
+
+    function scheduleDraw() {
+      clearTimeout(timer);
+      timer = setTimeout(drawLikesTrend, 20);
+    }
+
+    new MutationObserver(() => {
+      if (!trend.querySelector('[data-likes-trend="true"]')) scheduleDraw();
+    }).observe(trend, { childList: true, subtree: true });
+
+    document.addEventListener('change', (event) => {
+      if (event.target.closest('#start,#end,#type,#themeKey,#themeCategory')) scheduleDraw();
+    });
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('.quick button,.subtab,[data-category]')) scheduleDraw();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') scheduleDraw();
+    });
+
+    scheduleDraw();
+  }
+
   async function version(token = getToken()) {
     const commit = await api(`/commits/${encodeURIComponent(BRANCH)}`, { token });
     return commit?.sha || '';
@@ -217,5 +307,8 @@
     clearLocalData
   };
 
-  queueMicrotask(applySharedSimpleUi);
+  queueMicrotask(() => {
+    applySharedSimpleUi();
+    setupAnalyticsLikesTrend();
+  });
 })();
