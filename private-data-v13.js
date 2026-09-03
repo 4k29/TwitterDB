@@ -7,7 +7,8 @@
   const BRANCH = 'main';
   const API_BASE = `https://api.github.com/repos/${OWNER}/${REPO}`;
   const ANALYTICS_PENDING_TOKEN = '__twitterdb_analytics_unlock__';
-  const isAnalyticsPage = typeof location !== 'undefined' && /\/analytics\/(?:index\.html)?$/.test(location.pathname);
+  const isAnalyticsSection = typeof location !== 'undefined' && /\/analytics\//.test(location.pathname);
+  const isAnalyticsPage = isAnalyticsSection && /\/analytics\/(?:index\.html)?$/.test(location.pathname);
   let analyticsUnlocking = isAnalyticsPage && !localStorage.getItem(TOKEN_KEY);
 
   const getStoredToken = () => localStorage.getItem(TOKEN_KEY) || '';
@@ -21,7 +22,7 @@
 
     const stylesheet = document.createElement('link');
     stylesheet.rel = 'stylesheet';
-    stylesheet.href = isAnalyticsPage ? '../simple-ui.css?v=4' : './simple-ui.css?v=4';
+    stylesheet.href = isAnalyticsSection ? '../simple-ui.css?v=4' : './simple-ui.css?v=4';
     stylesheet.dataset.twitterdbSimpleUi = 'v4';
     document.head.appendChild(stylesheet);
 
