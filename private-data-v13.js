@@ -72,7 +72,7 @@
         save.disabled = true;
         messageBox.textContent = '接続を確認しています…';
         try {
-          await assignment('analytics/data.js', token);
+          await text('analytics/data.js', token);
           setToken(token);
           analyticsUnlocking = false;
           location.reload();
