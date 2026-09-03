@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>レビュー - TwitterDB</title>
+<meta name="description" content="TwitterDBの月次レビュー。">
+<link rel="stylesheet" href="../simple-ui.css?v=3">
+<style>
+:root{--bg:#0a0a0a;--text:#f5f5f7;--muted:#77777d;--line:#29292d;--line-soft:#1d1d20;--warning:#d8b85f}
+body{margin:0;background:var(--bg);color:var(--text)}
+.shell{width:min(820px,100%)!important}
+.review-nav{display:flex;gap:18px;overflow:auto;scrollbar-width:none}.review-nav::-webkit-scrollbar{display:none}
+.years{margin:0 0 12px}.months{padding:0 0 10px;margin:0 0 24px;border-bottom:1px solid var(--line)}
+.year-tab,.month-tab{position:relative;flex:0 0 auto;min-height:0!important;padding:0 0 7px!important;border:0!important;border-radius:0!important;background:transparent!important;color:var(--muted)!important;font:inherit;font-size:11px!important;font-weight:400!important;cursor:pointer}
+.year-tab.active,.month-tab.active{color:var(--text)!important}.month-tab.partial{color:var(--warning)!important}
+.month-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-11px;height:1px;background:var(--text)}.month-tab.partial.active::after{background:var(--warning)}
+.month-label{margin:0 0 4px;color:var(--muted);font-size:10px}.review.partial .month-label{color:var(--warning)}
+.review h2{margin:0;font-size:18px;line-height:1.45;letter-spacing:-.01em;font-weight:400}
+.stats{display:flex;flex-wrap:wrap;gap:6px 16px;margin:9px 0 18px;color:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}.stats strong{color:#cfcfd4;font-weight:400}
+.review-body{font-size:14px;line-height:1.9}.review-body p{margin:0 0 1.1em}.review-body p:last-child{margin-bottom:0}
+.top-posts{margin-top:26px;padding-top:13px;border-top:1px solid var(--line)}.top-posts-title{margin:0 0 6px;color:var(--muted);font-size:10px;font-weight:400}
+.top-post{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid var(--line-soft);text-decoration:none}.top-post:last-child{border-bottom:0}
+.top-post-date{color:#5f5f65;font-size:9px;padding-top:2px}.top-post-text{min-width:0;color:#b8b8be;font-size:11px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.top-post:hover .top-post-text{color:var(--text)}.top-post-stats{display:flex;gap:7px;color:#68686e;font-size:9px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{margin-top:26px;padding-top:12px;border-top:1px solid var(--line);color:#55555b;font-size:9px;line-height:1.6}.empty{padding:20px 0;color:var(--muted);font-size:12px}
+@media(max-width:600px){.top-post{grid-template-columns:52px minmax(0,1fr)}.top-post-stats{grid-column:2}.review-body{font-size:13.5px}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="site-header">
+    <span class="site-brand">TwitterDB</span>
+    <nav class="site-nav" aria-label="ページ移動">
+      <a href="./">アナリティクス</a>
+      <a class="active" href="./reviews.html">レビュー</a>
+    </nav>
+  </header>
+
+  <section aria-label="月次レビュー">
+    <nav class="review-nav years" id="yearIndex" role="tablist" aria-label="年を選択"></nav>
+    <nav class="review-nav months" id="monthIndex" role="tablist" aria-label="月を選択"></nav>
+    <div id="reviewView"><div class="empty">読み込み中…</div></div>
+  </section>
+
+  <p class="note" id="dataNote"></p>
+</main>
+<script src="../private-data-v13.js?v=1"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const nf=new Intl.NumberFormat("ja-JP",{maximumFractionDigits:1});
+const monthLabel=value=>`${Number(value.split("-")[1])}月`;
+let reviews=[];
+let statsMap=new Map();
+let activeYear="";
+
+function renderTopPosts(stats){
+  const posts=(stats?.topTweets||[]).slice(0,3);
+  if(!posts.length)return "";
+  return `<section class="top-posts"><h3 class="top-posts-title">伸びた投稿</h3>${posts.map(post=>`<a class="top-post" href="https://x.com/i/web/status/${esc(post.id)}" target="_blank" rel="noopener"><span class="top-post-date">${esc(post.date.slice(5).replace("-","/"))}</span><span class="top-post-text">${esc(post.text.replace(/\s+/g," "))}</span><span class="top-post-stats"><span>♡ ${nf.format(post.likes)}</span><span>RP ${nf.format(post.reposts)}</span></span></a>`).join("")}</section>`;
+}
+
+function renderReview(review){
+  const stats=statsMap.get(review.month);
+  const partial=review.status==="partial";
+  const paragraphs=String(review.body||"").split(/\n\s*\n/).filter(Boolean).map(p=>`<p>${esc(p).replace(/\n/g,"<br>")}</p>`).join("");
+  const statLine=stats?`<div class="stats"><span>投稿 <strong>${nf.format(stats.posts)}</strong></span><span>中央値 <strong>${nf.format(stats.medianLikes)}</strong></span><span>最大 <strong>${nf.format(stats.maxLikes)}</strong></span></div>`:"";
+  $("reviewView").innerHTML=`<article class="review ${partial?"partial":""}"><p class="month-label">${esc(monthLabel(review.month))}${partial?" ・ 暫定":""}</p><h2>${esc(review.title)}</h2>${statLine}<div class="review-body">${paragraphs}</div>${renderTopPosts(stats)}</article>`;
+}
+
+function renderMonths(year,selectedMonth){
+  activeYear=year;
+  $("yearIndex").querySelectorAll(".year-tab").forEach(button=>button.classList.toggle("active",button.dataset.year===year));
+  const yearReviews=reviews.filter(r=>r.month.startsWith(`${year}-`));
+  $("monthIndex").innerHTML=yearReviews.map(r=>`<button class="month-tab ${r.status==="partial"?"partial":""}" type="button" role="tab" aria-selected="false" data-month="${esc(r.month)}">${esc(monthLabel(r.month))}</button>`).join("");
+  $("monthIndex").querySelectorAll(".month-tab").forEach(button=>button.addEventListener("click",()=>selectMonth(button.dataset.month)));
+  selectMonth(yearReviews.some(r=>r.month===selectedMonth)?selectedMonth:yearReviews.at(-1)?.month,false);
+}
+
+function selectMonth(month,push=true){
+  const review=reviews.find(r=>r.month===month);
+  if(!review)return;
+  const year=review.month.slice(0,4);
+  if(year!==activeYear){renderMonths(year,month);return}
+  $("monthIndex").querySelectorAll(".month-tab").forEach(button=>{
+    const active=button.dataset.month===review.month;
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-selected",active?"true":"false");
+  });
+  renderReview(review);
+  if(push){const url=new URL(location.href);url.searchParams.set("month",review.month);history.replaceState(null,"",url)}
+}
+
+const privateData=window.PrivateTwitterDB;
+if(!privateData?.getToken())location.replace("../?return=reviews");
+
+Promise.all([
+  privateData.json("analytics/reviews.json"),
+  privateData.json("analytics/monthly-stats.json")
+]).then(([reviewData,statsData])=>{
+  reviews=[...(reviewData.reviews||[])].sort((a,b)=>a.month.localeCompare(b.month));
+  statsMap=new Map((statsData.months||[]).map(s=>[s.month,s]));
+  if(!reviews.length){$("reviewView").innerHTML='<div class="empty">レビューはまだありません。</div>';return}
+  const years=[...new Set(reviews.map(r=>r.month.slice(0,4)))].sort();
+  $("yearIndex").innerHTML=years.map(year=>`<button class="year-tab" type="button" role="tab" data-year="${year}">${year}</button>`).join("");
+  $("yearIndex").querySelectorAll(".year-tab").forEach(button=>button.addEventListener("click",()=>renderMonths(button.dataset.year)));
+  const requested=new URL(location.href).searchParams.get("month");
+  const initial=reviews.some(r=>r.month===requested)?requested:reviews.at(-1).month;
+  renderMonths(initial.slice(0,4),initial);
+  const max=statsData.dataRange?.max;
+  $("dataNote").textContent=max?`データ最終日 ${max}。反応数はアーカイブ取得時点。`:"";
+}).catch(()=>{location.replace("../?return=reviews")});
+</script>
+</body>
+</html>

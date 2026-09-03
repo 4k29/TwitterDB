@@ -1,0 +1,97 @@
+.filters{grid-template-columns:minmax(130px,.7fr) minmax(180px,1.1fr) minmax(130px,.7fr) minmax(190px,1.1fr) minmax(130px,.7fr) auto auto}
+.bulk-check{background:#f5f5f7;color:#0a0a0a;font-weight:650}
+.bulk-check:disabled{opacity:.45;cursor:default}
+.purge-deleted{min-height:36px;background:#351919;border:1px solid #5a2929;color:#e4a0a0}
+.purge-deleted:hover{background:#4a2020}
+.purge-deleted:disabled{opacity:.45;cursor:default}
+.tweet-row-v5{grid-template-columns:28px 112px minmax(0,1fr) 68px 82px 58px}
+.deleted-row{grid-template-columns:100px minmax(0,1fr) 58px}
+@media(max-width:1000px){
+  .filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .check-all-button,.filters .reset{grid-column:auto}
+}
+@media(max-width:760px){
+  .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .filters label:nth-child(2),.filters label:nth-child(4){grid-column:1/-1}
+  .check-all-button,.filters .reset{grid-column:auto}
+  .tweet-row-v5{grid-template-columns:28px 86px minmax(0,1fr) 76px 48px}
+  .tweet-row-v5 .likes{display:none}
+  .tweet-row-v5 .link-status{grid-column:4}
+  .tweet-row-v5 .check-button{grid-column:5}
+}
+@media(max-width:560px){
+  .filters{grid-template-columns:1fr}
+  .filters label:nth-child(2),.filters label:nth-child(4),.check-all-button,.filters .reset{grid-column:auto}
+  .tweet-row-v5{grid-template-columns:24px minmax(0,1fr) 74px}
+  .tweet-row-v5 .select-tweet{grid-column:1;grid-row:1/3}
+  .tweet-row-v5 .tweet-date{grid-column:2/-1}
+  .tweet-row-v5 .tweet-body{grid-column:2}
+  .tweet-row-v5 .link-status{grid-column:3;grid-row:2}
+  .tweet-row-v5 .check-button{grid-column:2/-1;grid-row:3}
+  .deleted-row{grid-template-columns:1fr 56px}
+}
+
+.pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin:22px 0 0}
+.pagination[hidden]{display:none}
+.pagination button{min-width:112px;min-height:38px}
+.pagination button:disabled{opacity:.38;cursor:default}
+.pagination span{min-width:150px;text-align:center;color:#8e8e93;font-size:12px;font-variant-numeric:tabular-nums}
+@media(max-width:560px){
+  .pagination{gap:8px}
+  .pagination button{min-width:0;flex:1}
+  .pagination span{min-width:108px;font-size:11px}
+}
+
+.keep-selected{min-height:36px;background:#f5f5f7;border:1px solid #f5f5f7;color:#0a0a0a;font-weight:650}
+.keep-selected:disabled{opacity:.45;cursor:default}
+.kept-card{width:min(900px,100%)}
+.kept-list{display:grid;gap:8px;margin-top:14px}
+.kept-row{display:grid;grid-template-columns:100px minmax(0,1fr) 58px 112px;gap:12px;align-items:center;padding:12px;border:1px solid #303034;border-radius:12px;background:#151517}
+.kept-row>a{color:#f5f5f7;text-decoration:none;min-width:0;overflow-wrap:anywhere}
+.kept-row>a:hover{color:#fff;text-decoration:underline}
+.restore-kept{white-space:nowrap}
+@media(max-width:700px){
+  .kept-row{grid-template-columns:80px minmax(0,1fr) 92px}
+  .kept-row .metric{display:none}
+}
+@media(max-width:520px){
+  .kept-row{grid-template-columns:1fr}
+  .kept-row .tweet-date{font-size:11px}
+  .restore-kept{width:100%}
+}
+
+/* shared simple UI */
+.header{align-items:center;margin-bottom:20px;padding-bottom:11px;border-bottom:1px solid #2b2b2f}
+.header h1{display:none}
+.header .eyebrow{margin:0;color:#f5f5f7;font-size:13px;font-weight:400;letter-spacing:0;text-transform:none}
+.header-actions{gap:3px}
+.header-link,.sync-button,.header-actions .secondary{min-height:30px;padding:0 8px;border:0;border-radius:6px;background:transparent;color:#8e8e93;font-size:12px;font-weight:400;box-shadow:none}
+.header-link:hover,.sync-button:hover,.header-actions .secondary:hover{background:#151517;color:#f5f5f7}
+.sync-button{color:#8e8e93!important;background:transparent!important;border:0!important;font-weight:400!important}
+.sync-status,.check-status{border:0!important;background:transparent!important;color:#68686d!important;padding:0 2px!important;min-height:0!important;font-size:10px!important}
+
+.filters{position:sticky;top:0;margin:0 0 18px;padding:10px 0 14px;border:0;border-bottom:1px solid #2b2b2f;border-radius:0;background:rgba(10,10,10,.94);box-shadow:none}
+.filters label>span{font-size:10px;color:#8e8e93}
+input,select{min-height:36px;border:1px solid #2b2b2f;border-radius:7px;background:#101011;box-shadow:none}
+input:focus,select:focus{border-color:#55555b;box-shadow:none}
+button,.secondary,.check-all-button,.keep-selected,.bulk-check,.purge-deleted{min-height:34px;border:1px solid #2b2b2f;border-radius:7px;background:transparent;color:#c7c7cc;padding:0 10px;font-weight:400;box-shadow:none}
+button:hover,.secondary:hover,.check-all-button:hover,.keep-selected:hover,.bulk-check:hover{background:#151517;color:#f5f5f7;border-color:#3a3a3f}
+.keep-selected,.bulk-check{background:transparent;color:#c7c7cc;border-color:#2b2b2f;font-weight:400}
+.purge-deleted{background:transparent;color:#c97b7b;border-color:#3b2929}
+
+.bulk-actions{padding:10px 0!important;border:0!important;border-bottom:1px solid #2b2b2f!important;border-radius:0!important;background:transparent!important}
+.summary{margin:12px 0 10px}.summary strong{font-size:20px;font-weight:400}
+.status{padding:12px 0;border:0;border-top:1px solid #2b2b2f;border-bottom:1px solid #2b2b2f;border-radius:0;background:transparent}
+.tweet-list{border-top:1px solid #2b2b2f}
+.tweet-row,.tweet-row-v5{padding-top:14px;padding-bottom:14px;border-bottom:1px solid #202024}
+.badge,.link-status{min-height:20px!important;padding:0 6px!important;border:0!important;border-radius:4px!important;background:#151517!important;color:#929299!important}
+.check-button,.delete-button{min-height:28px!important;padding:0 5px!important;border:0!important;background:transparent!important;color:#8e8e93!important}
+.check-button:hover,.delete-button:hover{color:#f5f5f7!important}
+.kept-row{padding:11px 0;border:0;border-bottom:1px solid #2b2b2f;border-radius:0;background:transparent}
+.dialog-card{border-radius:12px;background:#111113}.dialog-card h2{font-weight:400}
+
+@media(max-width:560px){
+  .header{flex-direction:row;align-items:center}.header-actions{width:auto}
+  .header-actions button,.header-actions .header-link{flex:0 0 auto}
+  .filters{position:static;padding-top:4px}
+}

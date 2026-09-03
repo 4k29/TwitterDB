@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>TwitterDB</title>
+  <meta name="description" content="過去ツイートを絞り込み、リンク先の存在状態を確認できる個人用データベース">
+  <link rel="stylesheet" href="./styles.css?v=15">
+  <link rel="stylesheet" href="./ui-v3.css?v=14">
+  <link rel="stylesheet" href="./ui-v4.css?v=14">
+  <link rel="stylesheet" href="./ui-v5.css?v=14">
+  <link rel="stylesheet" href="./ui-v6.css?v=14">
+  <link rel="stylesheet" href="./ui-v7.css?v=18">
+  <link rel="stylesheet" href="./simple-ui.css?v=3">
+</head>
+<body>
+  <main class="shell">
+    <header class="site-header">
+      <span class="site-brand">TwitterDB</span>
+      <nav class="site-nav" aria-label="ページ移動">
+        <a href="./analytics/">アナリティクス</a>
+        <a href="./analytics/reviews.html">レビュー</a>
+      </nav>
+    </header>
+
+    <header class="header">
+      <div class="header-actions">
+        <button id="syncSettings" class="sync-button" type="button" aria-haspopup="dialog" aria-controls="syncDialog">同期設定</button>
+        <button id="showKept" class="secondary" type="button">残す <span id="keptCount">0</span></button>
+        <button id="showDeleted" class="secondary" type="button">削除済み <span id="deletedCount">0</span></button>
+        <span id="syncBadge" class="sync-status" data-state="loading">確認中…</span>
+        <span id="checkBadge" class="check-status" data-state="idle">リンク未確認</span>
+      </div>
+    </header>
+
+    <section class="filters" aria-label="絞り込み条件">
+      <label><span>投稿種別</span>
+        <select id="typeFilter">
+          <option value="all">すべて</option>
+          <option value="post" selected>通常投稿</option>
+          <option value="reply">返信</option>
+          <option value="quote">引用</option>
+          <option value="repost">リポスト</option>
+        </select>
+      </label>
+      <label><span>返信先・メンション</span><select id="replyFilter"><option value="all">すべて</option></select></label>
+      <label><span>分類軸</span>
+        <select id="categoryAxis">
+          <option value="topic">詳細テーマ</option>
+          <option value="subject">投稿対象</option>
+          <option value="postStyle">投稿の型</option>
+        </select>
+      </label>
+      <label><span>ジャンル</span><select id="categoryFilter"><option value="all">すべて</option></select></label>
+      <label><span>並び順</span>
+        <select id="sortOrder">
+          <option value="old">古い順</option>
+          <option value="new">新しい順</option>
+          <option value="likes">いいね順</option>
+          <option value="reposts">リポスト順</option>
+        </select>
+      </label>
+      <button id="checkVisible" class="check-all-button" type="button">表示中を確認</button>
+      <button id="resetFilters" class="secondary reset" type="button">解除</button>
+    </section>
+
+    <section id="bulkActions" class="bulk-actions" data-active="false" aria-label="複数選択操作">
+      <p><strong id="selectedCount">0</strong>件選択中</p>
+      <button id="selectVisible" class="secondary" type="button">表示中を選択</button>
+      <button id="clearSelected" class="secondary" type="button" disabled>選択解除</button>
+      <button id="keepSelected" class="keep-selected" type="button" disabled>残す</button>
+      <button id="checkSelected" class="bulk-check" type="button" disabled>リンク確認</button>
+      <button id="purgeDeleted" class="purge-deleted" type="button">削除済みをDBから削除</button>
+    </section>
+
+    <section class="summary" aria-live="polite">
+      <div><strong id="resultCount">0</strong><span>件</span></div>
+      <p id="rangeLabel">データを読み込んでいます…</p>
+      <p id="syncState">同期状態を確認しています…</p>
+    </section>
+
+    <section id="status" class="status" hidden></section>
+    <section id="tweetList" class="tweet-list" aria-label="投稿一覧"></section>
+    <nav id="pagination" class="pagination" aria-label="投稿一覧のページ" hidden>
+      <button id="prevPage" class="secondary" type="button">前の100件</button>
+      <span id="pageLabel" aria-live="polite">1 / 1ページ</span>
+      <button id="nextPage" class="secondary" type="button">次の100件</button>
+    </nav>
+  </main>
+
+  <dialog id="deletedDialog">
+    <div class="dialog-card deleted-card">
+      <div class="dialog-head">
+        <div><p class="eyebrow">TwitterDB</p><h2>削除済み</h2></div>
+        <button id="closeDeleted" class="secondary" type="button">閉じる</button>
+      </div>
+      <input id="deletedQuery" type="search" placeholder="削除済みの投稿を検索">
+      <div id="deletedList" class="deleted-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="keptDialog">
+    <div class="dialog-card kept-card">
+      <div class="dialog-head">
+        <div><p class="eyebrow">TwitterDB</p><h2>残す投稿</h2></div>
+        <button id="closeKept" class="secondary" type="button">閉じる</button>
+      </div>
+      <input id="keptQuery" type="search" placeholder="残す投稿を検索">
+      <div id="keptList" class="kept-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="syncDialog">
+    <form id="syncForm" class="dialog-card">
+      <div class="dialog-head">
+        <div><p class="eyebrow">GitHub Sync</p><h2>同期設定</h2></div>
+        <button id="closeSync" class="secondary" type="button">閉じる</button>
+      </div>
+      <p>非公開のTwitterDBデータだけにアクセスできるFine-grained personal access tokenを、この端末に保存します。閲覧と同期にはContents、リンク確認にはActionsの権限が必要です。</p>
+      <label><span>Fine-grained token</span><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+      <div class="dialog-actions">
+        <button id="clearToken" class="secondary" type="button">この端末から削除</button>
+        <button id="saveToken" type="submit">保存して接続確認</button>
+      </div>
+      <p id="syncMessage" class="muted"></p>
+    </form>
+  </dialog>
+
+  <script src="./private-data-v13.js?v=1"></script>
+  <script src="./data-loader-v10.js?v=21"></script>
+</body>
+</html>
