@@ -117,8 +117,8 @@
         <div><p class="eyebrow">GitHub Sync</p><h2>同期設定</h2></div>
         <button id="closeSync" class="secondary" type="button">閉じる</button>
       </div>
-      <p>非公開のTwitterDBデータだけにアクセスできるFine-grained personal access tokenを、この端末に保存します。閲覧と同期にはContents、リンク確認にはActionsの権限が必要です。</p>
-      <label><span>Fine-grained token</span><input id="githubToken" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+      <p><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Fine-grained tokenを作成</a>し、対象を <strong>TwitterDB-dataのみ</strong>、Repository permissionsを <strong>Contents: Read and write</strong> と <strong>Actions: Read and write</strong> に設定してください。トークンはこのブラウザ内だけに保存され、公開リポジトリには保存されません。</p>
+      <label><span>Fine-grained token</span><input id="githubToken" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="github_pat_…"></label>
       <div class="dialog-actions">
         <button id="clearToken" class="secondary" type="button">この端末から削除</button>
         <button id="saveToken" type="submit">保存して接続確認</button>
