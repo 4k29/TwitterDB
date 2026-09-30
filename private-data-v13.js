@@ -111,7 +111,9 @@
     if (!response.ok) {
       let message = '';
       try { message = (await response.json()).message || ''; } catch {}
-      throw new Error(message || `GitHub API error ${response.status}`);
+      const error = new Error(message || `GitHub API error ${response.status}`);
+      error.status = response.status;
+      throw error;
     }
     return response.status === 204 ? null : response.json();
   }
@@ -136,7 +138,9 @@
     if (!response.ok) {
       let message = '';
       try { message = (await response.json()).message || ''; } catch {}
-      throw new Error(message || `GitHub API error ${response.status}`);
+      const error = new Error(message || `GitHub API error ${response.status}`);
+      error.status = response.status;
+      throw error;
     }
     return response.text();
   }
